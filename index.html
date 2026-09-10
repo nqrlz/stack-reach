@@ -324,10 +324,10 @@ function defaults(){
     budgetEnabled:true,
     showVectors:false,
     frames:[
-      {id:id(),name:"Beispiel Race 56",stack:550,reach:390},
-      {id:id(),name:"Beispiel Endurance 56",stack:585,reach:380},
-      {id:id(),name:"Beispiel Allroad 56",stack:602,reach:375},
-      {id:id(),name:"Beispiel Race 58",stack:572,reach:398},
+      {id:id(),seq:0,name:"Beispiel Race 56",stack:550,reach:390},
+      {id:id(),seq:1,name:"Beispiel Endurance 56",stack:585,reach:380},
+      {id:id(),seq:2,name:"Beispiel Allroad 56",stack:602,reach:375},
+      {id:id(),seq:3,name:"Beispiel Race 58",stack:572,reach:398},
     ]
   };
 }
@@ -339,6 +339,11 @@ function load(){
   return defaults();
 }
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+// each frame carries an insertion sequence so the list order can be restored
+function normalizeSeq(){ state.frames.forEach((f,i)=>{ if(typeof f.seq!=="number") f.seq=i; }); }
+function nextSeq(){ return state.frames.reduce((m,f)=>Math.max(m,f.seq||0),-1)+1; }
+function restoreOrder(){ state.frames.sort((a,b)=>(a.seq||0)-(b.seq||0)); buildRows(); }
+normalizeSeq();
 
 /* ---------- compensation model ---------- */
 function compensate(f){
@@ -608,7 +613,7 @@ function shortName(n){return n.replace(/^Beispiel\s+/i,"").slice(0,20);}
 /* ---------- actions ---------- */
 $("btn-add").addEventListener("click",()=>{
   const t=state.target;
-  const nf={id:id(),name:"Neuer Rahmen",stack:t.stack,reach:t.reach};
+  const nf={id:id(),seq:nextSeq(),name:"Neuer Rahmen",stack:t.stack,reach:t.reach};
   state.frames.push(nf); // always appended at the bottom
   save(); buildRows(); renderOutputs();
   const tr=$("frame-body").querySelector(`tr[data-id="${nf.id}"]`);
@@ -649,7 +654,8 @@ $("file-import").addEventListener("change",e=>{
       if(!s.frames||!Array.isArray(s.frames)) throw new Error("kein gültiger Datensatz");
       s.frames.forEach(f=>{if(!f.id)f.id=id();});
       state=Object.assign(defaults(),s); state.example=false;
-      save(); syncInputs(); buildRows(); renderOutputs(); updateBanner();
+      normalizeSeq();
+      save(); syncInputs(); applyBudgetUI(); buildRows(); renderOutputs(); updateBanner();
     }catch(err){alert("Import fehlgeschlagen: "+err.message);}
   };
   r.readAsText(file); e.target.value="";
@@ -698,7 +704,10 @@ function applyBudgetUI(){
 }
 $("chk-budget").addEventListener("change",()=>{
   state.budgetEnabled=$("chk-budget").checked;
-  save(); applyBudgetUI(); renderOutputs();
+  applyBudgetUI();
+  // deactivating drops the Passform sorting, so restore the original list order
+  if(!state.budgetEnabled) restoreOrder();
+  save(); renderOutputs();
 });
 
 /* ---------- keep the stem budget within 70–150 mm (and min ≤ max) ---------- */
