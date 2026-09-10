@@ -237,9 +237,9 @@
             <div class="in"><input type="number" id="sp-max" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
           <div class="grid2">
             <div class="field"><label for="st-min">Vorbau min</label>
-              <div class="in"><input type="number" id="st-min" step="5" min="70" max="150" inputmode="numeric"><span class="unit">mm</span></div></div>
+              <div class="in"><input type="number" id="st-min" step="10" min="70" max="150" inputmode="numeric"><span class="unit">mm</span></div></div>
             <div class="field"><label for="st-max">Vorbau max</label>
-              <div class="in"><input type="number" id="st-max" step="5" min="70" max="150" inputmode="numeric"><span class="unit">mm</span></div></div>
+              <div class="in"><input type="number" id="st-max" step="10" min="70" max="150" inputmode="numeric"><span class="unit">mm</span></div></div>
           </div>
           <p class="row-hint">Wie viel Korrektur per Cockpit realistisch ist. Bestimmt die Ampel <em>nach</em> Kompensation. Vorbau 70–150&nbsp;mm.</p>
         </div>
@@ -735,7 +735,7 @@ $("chk-budget").addEventListener("change",()=>{
 ["st-min","st-max"].forEach(idn=>{
   $(idn).addEventListener("change",()=>{
     const isMin=idn==="st-min";
-    let v=num($(idn).value);
+    let v=Math.round(num($(idn).value)/10)*10;   // snap to 10 mm steps
     if(isMin) v=clamp(v,70,Math.min(150,num(state.budget.stemMax)||150));
     else      v=clamp(v,Math.max(70,num(state.budget.stemMin)||70),150);
     $(idn).value=v;
