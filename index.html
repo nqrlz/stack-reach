@@ -374,10 +374,13 @@ function compensate(f){
   const compReach=num(f.reach)-reachDrop+stemAdd;
   const resStack=t.stack-compStack;
   const resReach=t.reach-compReach;
-  const aS=Math.abs(resStack),aR=Math.abs(resReach);
+  // verdict uses the ROUNDED (displayed) residual so it matches the text; empty tolerance falls back to default
+  const aS=Math.abs(Math.round(resStack)), aR=Math.abs(Math.round(resReach));
+  const tS=(state.tol.stack===""||state.tol.stack==null)?25:num(state.tol.stack);
+  const tR=(state.tol.reach===""||state.tol.reach==null)?15:num(state.tol.reach);
   let status;
-  if(aS<=state.tol.stack && aR<=state.tol.reach) status="good";
-  else if(aS>2*state.tol.stack || aR>2*state.tol.reach) status="crit";
+  if(aS<=tS && aR<=tR) status="good";
+  else if(aS>2*tS || aR>2*tR) status="crit";
   else status="warn";
   return {dStack,dReach,str,dist,active:true,spacer,stem,stemAdd,compStack,compReach,resStack,resReach,status};
 }
@@ -471,8 +474,8 @@ function statusPill(s){
 // remaining deviation as plain-text items, each with its direction in parentheses (for the hover tooltip)
 function restItems(c){
   const items=[];
-  if(Math.abs(c.resStack)>=1) items.push(`${signed(c.resStack)} mm Stack (${c.resStack>0?"zu tief":"zu hoch"})`);
-  if(Math.abs(c.resReach)>=1) items.push(`${signed(c.resReach)} mm Reach (${c.resReach>0?"zu kurz":"zu lang"})`);
+  if(Math.round(c.resStack)!==0) items.push(`${signed(c.resStack)} mm Stack (${c.resStack>0?"zu tief":"zu hoch"})`);
+  if(Math.round(c.resReach)!==0) items.push(`${signed(c.resReach)} mm Reach (${c.resReach>0?"zu kurz":"zu lang"})`);
   return items;
 }
 function recText(c){
@@ -481,8 +484,8 @@ function recText(c){
   parts.push(`${fmt(c.stem)} mm Vorbau`);
   // table version: value on one line, its direction on the next
   const rest=[];
-  if(Math.abs(c.resStack)>=1) rest.push(`${signed(c.resStack)} mm Stack<br>(${c.resStack>0?"zu tief":"zu hoch"})`);
-  if(Math.abs(c.resReach)>=1) rest.push(`${signed(c.resReach)} mm Reach<br>(${c.resReach>0?"zu kurz":"zu lang"})`);
+  if(Math.round(c.resStack)!==0) rest.push(`${signed(c.resStack)} mm Stack<br>(${c.resStack>0?"zu tief":"zu hoch"})`);
+  if(Math.round(c.resReach)!==0) rest.push(`${signed(c.resReach)} mm Reach<br>(${c.resReach>0?"zu kurz":"zu lang"})`);
   const restStr=rest.length?`Rest <b>${rest.join("<br>")}</b>`:`<b>exakt getroffen</b>`;
   return `${parts.join(" · ")} → ${restStr}`;
 }
@@ -725,10 +728,9 @@ function applyBudgetUI(){
 }
 $("chk-budget").addEventListener("change",()=>{
   state.budgetEnabled=$("chk-budget").checked;
+  // toggling never reorders the list — the closest is shown via the ★ highlight; use the sort button to rank
   applyBudgetUI();
-  // deactivating: rank frames by raw closeness so the nearest is on top; reactivating keeps order
-  if(!state.budgetEnabled) sortFrames();
-  else { save(); renderOutputs(); }
+  save(); renderOutputs();
 });
 
 /* ---------- keep the stem budget within 70–150 mm (and min ≤ max) ---------- */
