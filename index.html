@@ -41,6 +41,7 @@
   }
 
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   body{
     background:var(--ground); color:var(--ink);
     font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
@@ -81,6 +82,14 @@
   .eyebrow{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.09em;
     font-weight:600;font-size:12.5px;color:var(--muted);margin:0 0 12px}
   .eyebrow .n{color:var(--accent)}
+  .eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .panel-toggle{display:inline-flex;align-items:center;gap:5px;cursor:pointer;letter-spacing:.06em;
+    font-size:11px;color:var(--muted);text-transform:uppercase}
+  .panel-toggle input{accent-color:var(--accent);cursor:pointer;width:14px;height:14px}
+  /* greyed-out (deactivated) budget box: dim + lock the fields, keep the toggle live */
+  #budget-panel.off .budget-body{opacity:.4;pointer-events:none;filter:grayscale(1)}
+  /* hide the compensation + verdict columns when the budget is off */
+  table.no-budget .col-budget{display:none}
 
   .field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px}
   .field:last-child{margin-bottom:0}
@@ -212,23 +221,27 @@
         <p class="row-hint">Der Rahmen-Zielwert vom Fitter. Das Fadenkreuz im Diagramm.</p>
       </div>
 
-      <div class="panel">
-        <p class="eyebrow"><span class="n">▤</span> Toleranz &amp; Budget</p>
-        <div class="grid2">
-          <div class="field"><label for="tol-reach">Toleranz Reach</label>
-            <div class="in"><input type="number" id="tol-reach" step="1" inputmode="numeric"><span class="unit">±mm</span></div></div>
-          <div class="field"><label for="tol-stack">Toleranz Stack</label>
-            <div class="in"><input type="number" id="tol-stack" step="1" inputmode="numeric"><span class="unit">±mm</span></div></div>
+      <div class="panel" id="budget-panel">
+        <p class="eyebrow eyebrow-row"><span><span class="n">▤</span> Toleranz &amp; Budget</span>
+          <label class="panel-toggle"><input type="checkbox" id="chk-budget"> aktiv</label></p>
+        <div class="budget-body">
+          <div class="grid2">
+            <div class="field"><label for="tol-reach">Toleranz Reach</label>
+              <div class="in"><input type="number" id="tol-reach" step="1" inputmode="numeric"><span class="unit">±mm</span></div></div>
+            <div class="field"><label for="tol-stack">Toleranz Stack</label>
+              <div class="in"><input type="number" id="tol-stack" step="1" inputmode="numeric"><span class="unit">±mm</span></div></div>
+          </div>
+          <div class="field"><label for="sp-max">Spacer-Spielraum (max)</label>
+            <div class="in"><input type="number" id="sp-max" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
+          <div class="grid2">
+            <div class="field"><label for="st-min">Vorbau min</label>
+              <div class="in"><input type="number" id="st-min" step="5" min="70" max="150" inputmode="numeric"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="st-max">Vorbau max</label>
+              <div class="in"><input type="number" id="st-max" step="5" min="70" max="150" inputmode="numeric"><span class="unit">mm</span></div></div>
+          </div>
+          <p class="row-hint">Wie viel Korrektur per Cockpit realistisch ist. Bestimmt die Ampel <em>nach</em> Kompensation. Vorbau 70–150&nbsp;mm.</p>
         </div>
-        <div class="field"><label for="sp-max">Spacer-Spielraum (max)</label>
-          <div class="in"><input type="number" id="sp-max" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
-        <div class="grid2">
-          <div class="field"><label for="st-min">Vorbau min</label>
-            <div class="in"><input type="number" id="st-min" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
-          <div class="field"><label for="st-max">Vorbau max</label>
-            <div class="in"><input type="number" id="st-max" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
-        </div>
-        <p class="row-hint">Wie viel Korrektur per Cockpit realistisch ist. Bestimmt die Ampel <em>nach</em> Kompensation.</p>
+        <p class="row-hint budget-off-hint" hidden>Deaktiviert — die Rahmen werden nur roh per Stack/Reach mit dem Ziel verglichen (keine Cockpit-Korrektur, keine Ampel).</p>
       </div>
     </aside>
 
@@ -237,11 +250,11 @@
         <div class="plot-head">
           <h2>Stack &amp; Reach</h2>
           <div class="legend">
-            <span><span class="dot" style="background:var(--good)"></span>passend</span>
-            <span><span class="dot" style="background:var(--warn)"></span>grenzwertig</span>
-            <span><span class="dot" style="background:var(--crit)"></span>schwierig</span>
-            <span><span style="color:var(--accent);font-weight:700">✛</span>Lenker-Ziel</span>
-            <label class="vec-toggle"><input type="checkbox" id="chk-vectors"> Korrektur-Vektoren</label>
+            <span class="leg-budget"><span class="dot" style="background:var(--good)"></span>passend</span>
+            <span class="leg-budget"><span class="dot" style="background:var(--warn)"></span>grenzwertig</span>
+            <span class="leg-budget"><span class="dot" style="background:var(--crit)"></span>schwierig</span>
+            <span><span style="color:var(--accent);font-weight:700">✛</span>Ziel</span>
+            <label class="vec-toggle leg-budget"><input type="checkbox" id="chk-vectors"> Korrektur-Vektoren</label>
           </div>
         </div>
         <div id="plot"></div>
@@ -262,8 +275,8 @@
                 <th>ΔStack</th>
                 <th>ΔReach</th>
                 <th>STR</th>
-                <th>Cockpit-Korrektur → Rest</th>
-                <th>Passform</th>
+                <th class="col-budget">Cockpit-Korrektur → Rest</th>
+                <th class="col-budget">Passform</th>
                 <th></th>
               </tr>
             </thead>
@@ -308,6 +321,7 @@ function defaults(){
     target:{stack:570,reach:386},
     tol:{reach:15,stack:25},
     budget:{spacerMax:40,stemMin:70,stemMax:120},
+    budgetEnabled:true,
     showVectors:false,
     frames:[
       {id:id(),name:"Beispiel Race 56",stack:550,reach:390},
@@ -329,9 +343,12 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
 /* ---------- compensation model ---------- */
 function compensate(f){
   const t=state.target,b=state.budget;
-  const hta=73*Math.PI/180; // head-tube angle fixed — only a second-order effect on the spacer's reach component
   const dStack=t.stack-num(f.stack);   // + => need to raise
   const dReach=t.reach-num(f.reach);   // + => need to lengthen
+  const str=num(f.stack)/num(f.reach);
+  // budget deactivated: raw geometry comparison only, no cockpit correction, no verdict
+  if(!state.budgetEnabled) return {dStack,dReach,str,active:false,status:null};
+  const hta=73*Math.PI/180; // head-tube angle fixed — only a second-order effect on the spacer's reach component
   // spacers only raise
   let spacer=0;
   if(dStack>0) spacer=clamp(dStack/Math.sin(hta),0,b.spacerMax);
@@ -354,8 +371,7 @@ function compensate(f){
   if(aS<=state.tol.stack && aR<=state.tol.reach) status="good";
   else if(aS>2*state.tol.stack || aR>2*state.tol.reach) status="crit";
   else status="warn";
-  return {dStack,dReach,spacer,stem,stemAdd,compStack,compReach,resStack,resReach,status,
-    str:num(f.stack)/num(f.reach)};
+  return {dStack,dReach,str,active:true,spacer,stem,stemAdd,compStack,compReach,resStack,resReach,status};
 }
 
 /* ---------- rendering: inputs bound once, outputs re-rendered ---------- */
@@ -386,8 +402,8 @@ function buildRows(){
       <td class="o-dstack"></td>
       <td class="o-dreach"></td>
       <td class="o-str"></td>
-      <td class="rec o-rec"></td>
-      <td class="o-status"></td>
+      <td class="rec o-rec col-budget"></td>
+      <td class="o-status col-budget"></td>
       <td><button class="del-btn" tabindex="-1" title="Rahmen entfernen" aria-label="entfernen">×</button></td>`;
     tr.querySelectorAll("input").forEach(inp=>{
       inp.addEventListener("input",()=>{
@@ -415,9 +431,15 @@ function renderOutputs(){
     tr.querySelector(".o-dstack").innerHTML=deltaCell(c.dStack);
     tr.querySelector(".o-dreach").innerHTML=deltaCell(c.dReach);
     tr.querySelector(".o-str").textContent=c.str.toFixed(2);
-    tr.querySelector(".o-rec").innerHTML=recText(c);
-    tr.querySelector(".o-status").innerHTML=statusPill(c.status);
+    if(c.active){
+      tr.querySelector(".o-rec").innerHTML=recText(c);
+      tr.querySelector(".o-status").innerHTML=statusPill(c.status);
+    } else {
+      tr.querySelector(".o-rec").textContent="";
+      tr.querySelector(".o-status").textContent="";
+    }
   });
+  $("frame-table").classList.toggle("no-budget", !state.budgetEnabled);
   drawPlot(comp);
 }
 
@@ -482,11 +504,13 @@ function drawPlot(comp){
   const iw=W-m.l-m.r, ih=H-m.t-m.b;
   const t=state.target;
   const colorFor=s=>({good:"var(--good)",warn:"var(--warn)",crit:"var(--crit)"}[s]);
+  const budget=!!state.budgetEnabled;               // budget/tolerance active?
+  const showVec=budget && !!state.showVectors;
 
   let rs=[num(t.reach)-state.tol.reach, num(t.reach)+state.tol.reach];
   let ss=[num(t.stack)-state.tol.stack, num(t.stack)+state.tol.stack];
   state.frames.forEach(f=>{ rs.push(num(f.reach)); ss.push(num(f.stack));
-    if(state.showVectors){rs.push(comp[f.id].compReach); ss.push(comp[f.id].compStack);} });
+    if(showVec){rs.push(comp[f.id].compReach); ss.push(comp[f.id].compStack);} });
   let rmin=Math.min(...rs),rmax=Math.max(...rs),smin=Math.min(...ss),smax=Math.max(...ss);
   const rp=(rmax-rmin)*0.14+8, sp=(smax-smin)*0.14+8;
   rmin-=rp;rmax+=rp;smin-=sp;smax+=sp;
@@ -503,10 +527,12 @@ function drawPlot(comp){
   g+=`<text x="${m.l+iw/2}" y="${H-6}" class="axtitle" text-anchor="middle">REACH · mm →</text>`;
   g+=`<text x="14" y="${m.t+ih/2}" class="axtitle" text-anchor="middle" transform="rotate(-90 14 ${m.t+ih/2})">↑ STACK · mm</text>`;
 
-  // tolerance box
-  const rx1=X(t.reach-state.tol.reach),rx2=X(t.reach+state.tol.reach);
-  const ry1=Y(t.stack+state.tol.stack),ry2=Y(t.stack-state.tol.stack);
-  g+=`<rect x="${Math.min(rx1,rx2)}" y="${Math.min(ry1,ry2)}" width="${Math.abs(rx2-rx1)}" height="${Math.abs(ry2-ry1)}" class="tolbox"/>`;
+  // tolerance box — only when the budget/tolerance feature is active
+  if(budget){
+    const rx1=X(t.reach-state.tol.reach),rx2=X(t.reach+state.tol.reach);
+    const ry1=Y(t.stack+state.tol.stack),ry2=Y(t.stack-state.tol.stack);
+    g+=`<rect x="${Math.min(rx1,rx2)}" y="${Math.min(ry1,ry2)}" width="${Math.abs(rx2-rx1)}" height="${Math.abs(ry2-ry1)}" class="tolbox"/>`;
+  }
 
   // enlarged target crosshair: faint full guides + bold reticle (ring + long plus + centre dot)
   const tx=X(t.reach),ty=Y(t.stack);
@@ -519,7 +545,6 @@ function drawPlot(comp){
   g+=`<text x="${tx}" y="${m.t-9}" text-anchor="middle" class="ptlab tgt">ZIEL ${fmt(t.reach)} / ${fmt(t.stack)}</text>`;
 
   // optional correction vectors (raw -> compensated)
-  const showVec=!!state.showVectors;
   let vecs="";
   if(showVec){
     state.frames.forEach(f=>{
@@ -535,7 +560,7 @@ function drawPlot(comp){
   // frame endpoints, coloured by feasibility, labels fanned outward + de-cluttered vertically
   const items=state.frames.map(f=>{
     const c=comp[f.id];
-    return {f,c,x:X(num(f.reach)),y:clampY(Y(num(f.stack))),col:colorFor(c.status)};
+    return {f,c,x:X(num(f.reach)),y:clampY(Y(num(f.stack))),col:budget?colorFor(c.status):"var(--muted)"};
   });
   const order=items.slice().sort((a,b)=>a.y-b.y);
   order.forEach((it,i)=>{ it.ly=(i===0)?it.y:Math.max(it.y,order[i-1].ly+13); });
@@ -550,9 +575,8 @@ function drawPlot(comp){
     if(toRight && x+12+w>W-2) toRight=false;
     if(!toRight && x-12-w<m.l+2) toRight=true;
     const lx=toRight?x+9:x-9, anchor=toRight?"start":"end";
-    const ri=restItems(c);
-    const restTxt=ri.length?`Rest ${ri.join(" / ")}`:"exakt im Ziel";
-    const title=`${f.name} · Stack ${fmt(num(f.stack))} / Reach ${fmt(num(f.reach))} · ${restTxt}`;
+    let title=`${f.name} · Stack ${fmt(num(f.stack))} / Reach ${fmt(num(f.reach))}`;
+    if(c.active){ const ri=restItems(c); title+=` · ${ri.length?`Rest ${ri.join(" / ")}`:"exakt im Ziel"}`; }
     pts+=`<g><title>${escapeAttr(title)}</title>`;
     if(Math.abs(ly-y)>5) pts+=`<line x1="${x}" y1="${y}" x2="${lx+(toRight?-2:2)}" y2="${ly-3}" class="leader"/>`;
     pts+=`<circle cx="${x}" cy="${y}" r="5" fill="${col}" stroke="var(--surface)" stroke-width="1.5"/>`;
@@ -662,9 +686,38 @@ $("chk-vectors").addEventListener("change",()=>{
   state.showVectors=$("chk-vectors").checked; save(); renderOutputs();
 });
 
+/* ---------- Toleranz & Budget: activate / deactivate ---------- */
+function applyBudgetUI(){
+  const on=!!state.budgetEnabled;
+  $("chk-budget").checked=on;
+  $("budget-panel").classList.toggle("off",!on);
+  document.querySelector(".budget-off-hint").hidden=on;
+  $("btn-sort").disabled=!on;
+  $("chk-vectors").disabled=!on;
+  document.querySelectorAll(".leg-budget").forEach(el=>{el.hidden=!on;});
+}
+$("chk-budget").addEventListener("change",()=>{
+  state.budgetEnabled=$("chk-budget").checked;
+  save(); applyBudgetUI(); renderOutputs();
+});
+
+/* ---------- keep the stem budget within 70–150 mm (and min ≤ max) ---------- */
+["st-min","st-max"].forEach(idn=>{
+  $(idn).addEventListener("change",()=>{
+    const isMin=idn==="st-min";
+    let v=num($(idn).value);
+    if(isMin) v=clamp(v,70,Math.min(150,num(state.budget.stemMax)||150));
+    else      v=clamp(v,Math.max(70,num(state.budget.stemMin)||70),150);
+    $(idn).value=v;
+    state.budget[isMin?"stemMin":"stemMax"]=v;
+    save(); renderOutputs();
+  });
+});
+
 /* ---------- init ---------- */
 bindTop();
 buildRows();
+applyBudgetUI();
 renderOutputs();
 updateBanner();
 </script>
