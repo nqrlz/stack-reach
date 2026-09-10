@@ -88,8 +88,10 @@
   .panel-toggle input{accent-color:var(--accent);cursor:pointer;width:14px;height:14px}
   /* greyed-out (deactivated) budget box: dim + lock the fields, keep the toggle live */
   #budget-panel.off .budget-body{opacity:.4;pointer-events:none;filter:grayscale(1)}
-  /* hide the compensation + verdict columns when the budget is off */
-  table.no-budget .col-budget{display:none}
+  /* hide the cockpit-correction column when the budget is off */
+  table.no-budget .col-comp{display:none}
+  .o-status .dist{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+  .o-status .dist.closest{color:var(--accent);font-weight:700}
 
   .field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px}
   .field:last-child{margin-bottom:0}
@@ -241,7 +243,7 @@
           </div>
           <p class="row-hint">Wie viel Korrektur per Cockpit realistisch ist. Bestimmt die Ampel <em>nach</em> Kompensation. Vorbau 70–150&nbsp;mm.</p>
         </div>
-        <p class="row-hint budget-off-hint" hidden>Deaktiviert — die Rahmen werden nur roh per Stack/Reach mit dem Ziel verglichen (keine Cockpit-Korrektur, keine Ampel).</p>
+        <p class="row-hint budget-off-hint" hidden>Deaktiviert — Spacer/Vorbau virtuell auf 0. Die Rahmen werden roh per Stack/Reach verglichen; die Spalte „Abstand" zeigt <code>√(ΔStack²+ΔReach²)</code>, der nächste Rahmen ist ★ hervorgehoben.</p>
       </div>
     </aside>
 
@@ -275,8 +277,8 @@
                 <th>ΔStack</th>
                 <th>ΔReach</th>
                 <th>STR</th>
-                <th class="col-budget">Cockpit-Korrektur → Rest</th>
-                <th class="col-budget">Passform</th>
+                <th class="col-comp">Cockpit-Korrektur → Rest</th>
+                <th id="th-status">Passform</th>
                 <th></th>
               </tr>
             </thead>
@@ -351,8 +353,9 @@ function compensate(f){
   const dStack=t.stack-num(f.stack);   // + => need to raise
   const dReach=t.reach-num(f.reach);   // + => need to lengthen
   const str=num(f.stack)/num(f.reach);
+  const dist=Math.hypot(dStack,dReach); // raw distance to target (no cockpit correction)
   // budget deactivated: raw geometry comparison only, no cockpit correction, no verdict
-  if(!state.budgetEnabled) return {dStack,dReach,str,active:false,status:null};
+  if(!state.budgetEnabled) return {dStack,dReach,str,dist,active:false,status:null};
   const hta=73*Math.PI/180; // head-tube angle fixed — only a second-order effect on the spacer's reach component
   // spacers only raise
   let spacer=0;
@@ -376,7 +379,7 @@ function compensate(f){
   if(aS<=state.tol.stack && aR<=state.tol.reach) status="good";
   else if(aS>2*state.tol.stack || aR>2*state.tol.reach) status="crit";
   else status="warn";
-  return {dStack,dReach,str,active:true,spacer,stem,stemAdd,compStack,compReach,resStack,resReach,status};
+  return {dStack,dReach,str,dist,active:true,spacer,stem,stemAdd,compStack,compReach,resStack,resReach,status};
 }
 
 /* ---------- rendering: inputs bound once, outputs re-rendered ---------- */
@@ -407,8 +410,8 @@ function buildRows(){
       <td class="o-dstack"></td>
       <td class="o-dreach"></td>
       <td class="o-str"></td>
-      <td class="rec o-rec col-budget"></td>
-      <td class="o-status col-budget"></td>
+      <td class="rec o-rec col-comp"></td>
+      <td class="o-status"></td>
       <td><button class="del-btn" tabindex="-1" title="Rahmen entfernen" aria-label="entfernen">×</button></td>`;
     tr.querySelectorAll("input").forEach(inp=>{
       inp.addEventListener("input",()=>{
@@ -429,6 +432,8 @@ function renderOutputs(){
   // rows stay in list order — never auto-sorted; only computed cells + plot refresh
   const comp={};
   state.frames.forEach(f=>comp[f.id]=compensate(f));
+  const off=!state.budgetEnabled;
+  const closestId=off?closestFrameId(comp):null;
   state.frames.forEach(f=>{
     const c=comp[f.id];
     const tr=document.querySelector(`tr[data-id="${f.id}"]`);
@@ -440,12 +445,19 @@ function renderOutputs(){
       tr.querySelector(".o-rec").innerHTML=recText(c);
       tr.querySelector(".o-status").innerHTML=statusPill(c.status);
     } else {
+      // budget off: no cockpit correction — show raw distance to target, mark the closest
       tr.querySelector(".o-rec").textContent="";
-      tr.querySelector(".o-status").textContent="";
+      const isClosest=f.id===closestId;
+      tr.querySelector(".o-status").innerHTML=`<span class="dist${isClosest?" closest":""}">${fmt(c.dist)} mm${isClosest?" ★":""}</span>`;
     }
   });
-  $("frame-table").classList.toggle("no-budget", !state.budgetEnabled);
+  $("frame-table").classList.toggle("no-budget", off);
   drawPlot(comp);
+}
+function closestFrameId(comp){
+  let best=Infinity, id=null;
+  state.frames.forEach(f=>{ const d=comp[f.id].dist; if(d<best){best=d;id=f.id;} });
+  return id;
 }
 
 function deltaCell(v){
@@ -480,12 +492,16 @@ function escapeAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quo
 function sortFrames(){
   const comp={};
   state.frames.forEach(f=>comp[f.id]=compensate(f));
-  const rank={good:0,warn:1,crit:2};
-  const dist=c=>Math.hypot(c.resStack,c.resReach); // remaining deviation after cockpit correction
-  state.frames.sort((a,b)=>{
-    const ca=comp[a.id],cb=comp[b.id];
-    return (rank[ca.status]-rank[cb.status]) || (dist(ca)-dist(cb));
-  });
+  if(state.budgetEnabled){
+    const rank={good:0,warn:1,crit:2};
+    const rdist=c=>Math.hypot(c.resStack,c.resReach); // remaining deviation after cockpit correction
+    state.frames.sort((a,b)=>{
+      const ca=comp[a.id],cb=comp[b.id];
+      return (rank[ca.status]-rank[cb.status]) || (rdist(ca)-rdist(cb));
+    });
+  } else {
+    state.frames.sort((a,b)=>comp[a.id].dist-comp[b.id].dist); // raw closeness to target, closest first
+  }
   save(); buildRows(); renderOutputs();
 }
 $("btn-sort").addEventListener("click",sortFrames);
@@ -563,9 +579,12 @@ function drawPlot(comp){
   }
 
   // frame endpoints, coloured by feasibility, labels fanned outward + de-cluttered vertically
+  const closestId = budget ? null : closestFrameId(comp);
   const items=state.frames.map(f=>{
     const c=comp[f.id];
-    return {f,c,x:X(num(f.reach)),y:clampY(Y(num(f.stack))),col:budget?colorFor(c.status):"var(--muted)"};
+    const hi = f.id===closestId;
+    return {f,c,hi,x:X(num(f.reach)),y:clampY(Y(num(f.stack))),
+      col: budget?colorFor(c.status):(hi?"var(--accent)":"var(--muted)")};
   });
   const order=items.slice().sort((a,b)=>a.y-b.y);
   order.forEach((it,i)=>{ it.ly=(i===0)?it.y:Math.max(it.y,order[i-1].ly+13); });
@@ -574,7 +593,7 @@ function drawPlot(comp){
 
   let pts="";
   items.forEach(it=>{
-    const {f,c,x,y,col,ly}=it;
+    const {f,c,x,y,col,ly,hi}=it;
     const w=shortName(f.name).length*5.4;
     let toRight=x>=tx;
     if(toRight && x+12+w>W-2) toRight=false;
@@ -584,8 +603,9 @@ function drawPlot(comp){
     if(c.active){ const ri=restItems(c); title+=` · ${ri.length?`Rest ${ri.join(" / ")}`:"exakt im Ziel"}`; }
     pts+=`<g><title>${escapeAttr(title)}</title>`;
     if(Math.abs(ly-y)>5) pts+=`<line x1="${x}" y1="${y}" x2="${lx+(toRight?-2:2)}" y2="${ly-3}" class="leader"/>`;
-    pts+=`<circle cx="${x}" cy="${y}" r="5" fill="${col}" stroke="var(--surface)" stroke-width="1.5"/>`;
-    pts+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" class="ptlab">${escapeAttr(shortName(f.name))}</text>`;
+    if(hi) pts+=`<circle cx="${x}" cy="${y}" r="9" fill="none" stroke="var(--accent)" stroke-width="1.8"/>`;
+    pts+=`<circle cx="${x}" cy="${y}" r="${hi?6:5}" fill="${col}" stroke="var(--surface)" stroke-width="1.5"/>`;
+    pts+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" class="ptlab${hi?" tgt":""}">${escapeAttr(shortName(f.name))}${hi?" ★":""}</text>`;
     pts+=`</g>`;
   });
 
@@ -698,16 +718,17 @@ function applyBudgetUI(){
   $("chk-budget").checked=on;
   $("budget-panel").classList.toggle("off",!on);
   document.querySelector(".budget-off-hint").hidden=on;
-  $("btn-sort").disabled=!on;
+  $("th-status").textContent = on ? "Passform" : "Abstand";
+  $("btn-sort").textContent = on ? "↕ Nach Passform sortieren" : "↕ Nach Nähe sortieren";
   $("chk-vectors").disabled=!on;
   document.querySelectorAll(".leg-budget").forEach(el=>{el.hidden=!on;});
 }
 $("chk-budget").addEventListener("change",()=>{
   state.budgetEnabled=$("chk-budget").checked;
   applyBudgetUI();
-  // deactivating drops the Passform sorting, so restore the original list order
-  if(!state.budgetEnabled) restoreOrder();
-  save(); renderOutputs();
+  // deactivating: rank frames by raw closeness so the nearest is on top; reactivating keeps order
+  if(!state.budgetEnabled) sortFrames();
+  else { save(); renderOutputs(); }
 });
 
 /* ---------- keep the stem budget within 70–150 mm (and min ≤ max) ---------- */
