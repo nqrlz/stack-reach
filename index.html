@@ -1,0 +1,670 @@
+<title>Rahmen-Fit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ground:#EEF0F2; --surface:#FFFFFF; --surface-2:#F7F8FA;
+    --ink:#14171C; --muted:#616B7A; --faint:#8A93A0;
+    --line:#D6DAE0; --line-strong:#BFC6CF;
+    --accent:#2457D6; --accent-soft:#DCE4FB;
+    --good:#2F9E44; --good-bg:#E4F3E7;
+    --warn:#E8850C; --warn-bg:#FBEED8;
+    --crit:#E03131; --crit-bg:#FBE0E0;
+    --grid:#E3E6EA; --grid-strong:#CDD3DA;
+    --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
+  }
+  :root:not([data-theme="light"]){ }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ground:#111418; --surface:#191D23; --surface-2:#1F242B;
+      --ink:#E8EBEF; --muted:#9AA4B0; --faint:#6E7884;
+      --line:#2A313A; --line-strong:#3A434E;
+      --accent:#6E93FF; --accent-soft:#22304F;
+      --good:#5BC46B; --good-bg:#193322;
+      --warn:#F0A742; --warn-bg:#3A2C16;
+      --crit:#F0605F; --crit-bg:#3A1E1E;
+      --grid:#232A32; --grid-strong:#333C46;
+      --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#111418; --surface:#191D23; --surface-2:#1F242B;
+    --ink:#E8EBEF; --muted:#9AA4B0; --faint:#6E7884;
+    --line:#2A313A; --line-strong:#3A434E;
+    --accent:#6E93FF; --accent-soft:#22304F;
+    --good:#5BC46B; --good-bg:#193322;
+    --warn:#F0A742; --warn-bg:#3A2C16;
+    --crit:#F0605F; --crit-bg:#3A1E1E;
+    --grid:#232A32; --grid-strong:#333C46;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--ground); color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+    line-height:1.5; margin:0;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+  .cond{font-family:"Barlow Condensed","IBM Plex Sans",sans-serif}
+
+  .wrap{max-width:1240px;margin:0 auto;padding:24px 20px 64px}
+
+  /* header */
+  header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    padding-bottom:16px;border-bottom:2px solid var(--ink);margin-bottom:22px}
+  .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .brand h1{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:38px;
+    letter-spacing:.01em;margin:0;line-height:.95;text-transform:uppercase}
+  .brand .tag{color:var(--muted);font-size:14px;max-width:44ch}
+  .top-actions{display:flex;gap:8px;align-items:center}
+
+  button,.btn{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:15px;
+    letter-spacing:.03em;text-transform:uppercase;cursor:pointer;
+    background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);
+    border-radius:7px;padding:8px 13px;transition:border-color .12s,background .12s}
+  button:hover,.btn:hover{border-color:var(--accent)}
+  button:focus-visible,.btn:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+  button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+  button.ghost{background:transparent}
+  button.icon{padding:6px 9px;line-height:1}
+
+  .layout{display:grid;grid-template-columns:300px 1fr;gap:22px;align-items:start}
+  @media (max-width:860px){.layout{grid-template-columns:1fr}}
+
+  /* panels */
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+  aside .panel{padding:16px}
+  aside .panel + .panel{margin-top:16px}
+  .eyebrow{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.09em;
+    font-weight:600;font-size:12.5px;color:var(--muted);margin:0 0 12px}
+  .eyebrow .n{color:var(--accent)}
+
+  .field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px}
+  .field:last-child{margin-bottom:0}
+  .field label{font-size:11.5px;letter-spacing:.03em;color:var(--muted);text-transform:uppercase;
+    font-family:"Barlow Condensed",sans-serif;font-weight:600}
+  .field .in{position:relative;display:flex;align-items:center}
+  input[type=text],input[type=number]{width:100%;font-family:"IBM Plex Mono",monospace;
+    font-variant-numeric:tabular-nums;font-size:15px;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:7px;
+    padding:7px 9px;padding-right:34px}
+  input::placeholder{color:var(--faint)}
+  .field .unit{position:absolute;right:10px;font-size:11px;color:var(--faint);
+    font-family:"Barlow Condensed",sans-serif;letter-spacing:.04em;pointer-events:none}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row-hint{font-size:11.5px;color:var(--faint);margin-top:8px;line-height:1.35}
+
+  .target-panel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset,var(--shadow)}
+  .target-panel .eyebrow .n{color:var(--accent)}
+
+  /* main */
+  .plotcard{padding:16px 16px 8px}
+  .plot-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .plot-head h2{font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;
+    letter-spacing:.02em;font-size:19px;margin:0}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);align-items:center}
+  .legend span{display:inline-flex;align-items:center;gap:5px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .swatch-ring{width:10px;height:10px;border-radius:50%;border:1.6px solid var(--muted);display:inline-block}
+  .vec-toggle{display:inline-flex;align-items:center;gap:5px;cursor:pointer;color:var(--muted);
+    padding-left:8px;border-left:1px solid var(--line);user-select:none}
+  .vec-toggle input{accent-color:var(--accent);cursor:pointer}
+  svg.plot{display:block;width:100%;height:auto}
+  .fit-readout{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 10px}
+  .fit-readout .chip{display:inline-flex;align-items:baseline;gap:6px;background:var(--surface-2);
+    border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+  .fit-readout .chip .k{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.05em;
+    font-size:11px;color:var(--muted)}
+  .fit-readout .chip .v{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+    font-size:14px;font-weight:600;color:var(--ink)}
+  .fit-readout .chip .u{font-size:10.5px;color:var(--faint)}
+
+  /* table */
+  .tablecard{margin-top:22px;padding:16px}
+  .table-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .table-head h2{font-family:"Barlow Condensed",sans-serif;font-weight:700;text-transform:uppercase;
+    letter-spacing:.02em;font-size:19px;margin:0}
+  .scroll{overflow-x:auto;margin:0 -4px}
+  table{border-collapse:collapse;width:100%;min-width:720px}
+  th{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.05em;
+    font-weight:600;font-size:11.5px;color:var(--muted);text-align:right;
+    padding:6px 10px;border-bottom:1.5px solid var(--line-strong);white-space:nowrap;user-select:none}
+  th:first-child,td:first-child{text-align:left}
+  td{padding:5px 10px;border-bottom:1px solid var(--line);text-align:right;
+    font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:13.5px;white-space:nowrap}
+  tr:last-child td{border-bottom:none}
+  td.name{text-align:left}
+  td input{padding:5px 7px;padding-right:7px;font-size:13px;background:transparent;border:1px solid transparent;border-radius:5px}
+  td input:hover{border-color:var(--line)}
+  td input:focus{background:var(--surface-2);border-color:var(--accent)}
+  td input.name-in{width:160px;text-align:left;font-family:"IBM Plex Sans",sans-serif;font-weight:500}
+  td input.num{width:64px;text-align:right}
+  td input.hta{width:56px}
+  /* override the global input[type=number] padding-right (meant for unit labels) inside the table */
+  #frame-body input{padding:6px 8px}
+  #frame-body input::-webkit-outer-spin-button,
+  #frame-body input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  #frame-body input[type=number]{-moz-appearance:textfield}
+  .delta.pos{color:var(--accent)}
+  .delta.neg{color:var(--warn)}
+  .pill{display:inline-block;font-family:"Barlow Condensed",sans-serif;font-weight:600;
+    text-transform:uppercase;letter-spacing:.04em;font-size:11px;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .pill.good{background:var(--good-bg);color:var(--good)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn)}
+  .pill.crit{background:var(--crit-bg);color:var(--crit)}
+  td.rec{text-align:left;font-family:"IBM Plex Sans",sans-serif;font-size:12px;color:var(--muted);
+    white-space:normal;min-width:200px;line-height:1.35}
+  td.rec b{color:var(--ink);font-family:"IBM Plex Mono",monospace;font-weight:600}
+  .del-btn{color:var(--faint);border-color:transparent;background:transparent;font-size:16px;padding:2px 7px}
+  .del-btn:hover{color:var(--crit);border-color:var(--crit)}
+
+  .addrow{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .note{font-size:12px;color:var(--faint);margin-top:14px;line-height:1.45}
+  .note b{color:var(--muted);font-weight:600}
+
+  .example-banner{display:flex;gap:9px;align-items:center;background:var(--accent-soft);
+    color:var(--ink);border-radius:9px;padding:9px 13px;font-size:12.5px;margin-bottom:18px;line-height:1.4}
+  .example-banner strong{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.04em}
+  .example-banner button{margin-left:auto;font-size:12px;padding:5px 10px}
+
+  details.assump{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+  details.assump summary{cursor:pointer;font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+    letter-spacing:.05em;font-size:12.5px;color:var(--muted);font-weight:600}
+  details.assump ul{margin:10px 0 0;padding-left:18px;font-size:12.5px;color:var(--muted);line-height:1.55}
+  details.assump code{font-family:"IBM Plex Mono",monospace;background:var(--surface-2);padding:1px 4px;border-radius:4px;font-size:11.5px}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Rahmen&#8203;-Fit</h1>
+      <span class="tag">Deine Fit-Zielwerte gegen Rahmen-Geometrien — mit Spacer- und Vorbau-Korrektur.</span>
+    </div>
+    <div class="top-actions">
+      <button class="ghost" id="btn-export" title="Alle Daten als JSON sichern">Export</button>
+      <button class="ghost" id="btn-import" title="JSON laden">Import</button>
+      <input type="file" id="file-import" accept="application/json,.json" hidden>
+      <button class="icon ghost" id="btn-theme" title="Hell/Dunkel umschalten" aria-label="Theme umschalten">◐</button>
+    </div>
+  </header>
+
+  <div class="example-banner" id="example-banner" hidden>
+    <strong>Beispieldaten</strong>
+    <span>Ziel-Stack/Reach und die Rahmen sind Platzhalter — überschreib sie mit deinen echten Werten.</span>
+    <button class="ghost" id="btn-dismiss-banner">Verstanden</button>
+  </div>
+
+  <div class="layout">
+    <aside>
+      <div class="panel target-panel">
+        <p class="eyebrow"><span class="n">✛</span> Ziel-Geometrie</p>
+        <div class="grid2">
+          <div class="field"><label for="t-stack">Ziel-Stack</label>
+            <div class="in"><input type="number" id="t-stack" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
+          <div class="field"><label for="t-reach">Ziel-Reach</label>
+            <div class="in"><input type="number" id="t-reach" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
+        </div>
+        <p class="row-hint">Der Rahmen-Zielwert vom Fitter. Das Fadenkreuz im Diagramm.</p>
+      </div>
+
+      <div class="panel">
+        <p class="eyebrow"><span class="n">▤</span> Toleranz &amp; Budget</p>
+        <div class="grid2">
+          <div class="field"><label for="tol-reach">Toleranz Reach</label>
+            <div class="in"><input type="number" id="tol-reach" step="1" inputmode="numeric"><span class="unit">±mm</span></div></div>
+          <div class="field"><label for="tol-stack">Toleranz Stack</label>
+            <div class="in"><input type="number" id="tol-stack" step="1" inputmode="numeric"><span class="unit">±mm</span></div></div>
+        </div>
+        <div class="field"><label for="sp-max">Spacer-Spielraum (max)</label>
+          <div class="in"><input type="number" id="sp-max" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
+        <div class="grid2">
+          <div class="field"><label for="st-min">Vorbau min</label>
+            <div class="in"><input type="number" id="st-min" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
+          <div class="field"><label for="st-max">Vorbau max</label>
+            <div class="in"><input type="number" id="st-max" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
+        </div>
+        <p class="row-hint">Wie viel Korrektur per Cockpit realistisch ist. Bestimmt die Ampel <em>nach</em> Kompensation.</p>
+      </div>
+    </aside>
+
+    <main>
+      <div class="panel plotcard">
+        <div class="plot-head">
+          <h2>Stack &amp; Reach</h2>
+          <div class="legend">
+            <span><span class="dot" style="background:var(--good)"></span>passend</span>
+            <span><span class="dot" style="background:var(--warn)"></span>grenzwertig</span>
+            <span><span class="dot" style="background:var(--crit)"></span>schwierig</span>
+            <span><span style="color:var(--accent);font-weight:700">✛</span>Lenker-Ziel</span>
+            <label class="vec-toggle"><input type="checkbox" id="chk-vectors"> Korrektur-Vektoren</label>
+          </div>
+        </div>
+        <div id="plot"></div>
+      </div>
+
+      <div class="panel tablecard">
+        <div class="table-head">
+          <h2>Rahmen-Vergleich</h2>
+          <span class="row-hint" style="margin:0">Zellen sind editierbar · Reihenfolge bleibt, bis du „Nach Passform sortieren" drückst</span>
+        </div>
+        <div class="scroll">
+          <table id="frame-table">
+            <thead>
+              <tr>
+                <th>Rahmen</th>
+                <th>Stack</th>
+                <th>Reach</th>
+                <th>ΔStack</th>
+                <th>ΔReach</th>
+                <th>STR</th>
+                <th>Cockpit-Korrektur → Rest</th>
+                <th>Passform</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="frame-body"></tbody>
+          </table>
+        </div>
+        <div class="addrow">
+          <button class="primary" id="btn-add">+ Rahmen hinzufügen</button>
+          <button class="ghost" id="btn-sort" title="Rahmen nach Passform ordnen (beste zuerst)">↕ Nach Passform sortieren</button>
+          <button class="ghost" id="btn-reset" title="Beispiel-Datensatz wiederherstellen">Beispiele laden</button>
+        </div>
+
+        <details class="assump">
+          <summary>Rechenannahmen</summary>
+          <ul>
+            <li>Vergleichswert ist der <b>Rahmen</b>-Stack/Reach. <code>ΔStack&nbsp;=&nbsp;Ziel−Rahmen</code>, positiv = Rahmen flacher/kürzer als Ziel.</li>
+            <li>Spacer heben den Stack um <code>h·sin(73°)</code> und verkürzen den Reach um <code>h·cos(73°)</code>. Der Steuerrohrwinkel ist fest mit 73° angesetzt — sein Einfluss ist nur zweiter Ordnung.</li>
+            <li>Stack lässt sich per Spacer <b>anheben</b>, kaum absenken — ein Rahmen mit zu viel Stack bleibt daher eher rot (asymmetrisches Budget).</li>
+            <li>Reach wird über die Vorbau-Spanne ausgeglichen — Vorbauten in <b>10-mm-Schritten</b>, Referenz ist die (auf 10 mm gerundete) Budget-Mitte. Der Rest-Reach rechnet mit dem tatsächlich verbaubaren Vorbau; Spacer sind stufenlos.</li>
+            <li><b>Ampel:</b> grün, wenn die Rest-Abweichung innerhalb beider Toleranzen liegt · rot, wenn sie eine Toleranz um mehr als das Doppelte reißt · sonst gelb.</li>
+          </ul>
+        </details>
+      </div>
+
+      <p class="note"><b>Hinweis:</b> Das Tool ersetzt keinen Bikefitter. Es hilft, Rahmen-Geometrien systematisch gegen deine gemessenen Zielwerte zu vergleichen. Alle Daten bleiben lokal in diesem Browser gespeichert.</p>
+    </main>
+  </div>
+</div>
+
+<script>
+"use strict";
+const KEY="rahmenfit_v1";
+const $=id=>document.getElementById(id);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0;};
+const fmt=v=>Math.round(v);
+const signed=v=>{const r=Math.round(v);return (r>0?"+":"")+r;};
+
+function defaults(){
+  return {
+    example:true,
+    target:{stack:570,reach:386},
+    tol:{reach:15,stack:25},
+    budget:{spacerMax:40,stemMin:70,stemMax:120},
+    showVectors:false,
+    frames:[
+      {id:id(),name:"Beispiel Race 56",stack:550,reach:390},
+      {id:id(),name:"Beispiel Endurance 56",stack:585,reach:380},
+      {id:id(),name:"Beispiel Allroad 56",stack:602,reach:375},
+      {id:id(),name:"Beispiel Race 58",stack:572,reach:398},
+    ]
+  };
+}
+function id(){return "f"+Math.random().toString(36).slice(2,9);}
+
+let state=load();
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.frames)return Object.assign(defaults(),s);}catch(e){}
+  return defaults();
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+
+/* ---------- compensation model ---------- */
+function compensate(f){
+  const t=state.target,b=state.budget;
+  const hta=73*Math.PI/180; // head-tube angle fixed — only a second-order effect on the spacer's reach component
+  const dStack=t.stack-num(f.stack);   // + => need to raise
+  const dReach=t.reach-num(f.reach);   // + => need to lengthen
+  // spacers only raise
+  let spacer=0;
+  if(dStack>0) spacer=clamp(dStack/Math.sin(hta),0,b.spacerMax);
+  const stackRaise=spacer*Math.sin(hta);
+  const reachDrop=spacer*Math.cos(hta);
+  // stem covers remaining reach need (plus what spacers stole) — real stems come in 10 mm steps
+  const stemMin=num(b.stemMin), stemMax=num(b.stemMax);
+  const stemRef=Math.round((stemMin+stemMax)/2/10)*10; // stockable neutral stem
+  const neededShift=dReach+reachDrop;
+  let stem=Math.round((stemRef+neededShift)/10)*10;    // snap to the nearest 10 mm stem
+  if(stem<stemMin) stem=Math.ceil(stemMin/10)*10;      // keep it inside the budget
+  if(stem>stemMax) stem=Math.floor(stemMax/10)*10;
+  const stemAdd=stem-stemRef;
+  const compStack=num(f.stack)+stackRaise;
+  const compReach=num(f.reach)-reachDrop+stemAdd;
+  const resStack=t.stack-compStack;
+  const resReach=t.reach-compReach;
+  const aS=Math.abs(resStack),aR=Math.abs(resReach);
+  let status;
+  if(aS<=state.tol.stack && aR<=state.tol.reach) status="good";
+  else if(aS>2*state.tol.stack || aR>2*state.tol.reach) status="crit";
+  else status="warn";
+  return {dStack,dReach,spacer,stem,stemAdd,compStack,compReach,resStack,resReach,status,
+    str:num(f.stack)/num(f.reach)};
+}
+
+/* ---------- rendering: inputs bound once, outputs re-rendered ---------- */
+function bindTop(){
+  const map=[
+    ["t-stack","target","stack"],["t-reach","target","reach"],
+    ["tol-reach","tol","reach"],["tol-stack","tol","stack"],
+    ["sp-max","budget","spacerMax"],["st-min","budget","stemMin"],["st-max","budget","stemMax"],
+  ];
+  map.forEach(([el,grp,k])=>{
+    const inp=$(el); inp.value=state[grp][k];
+    inp.addEventListener("input",()=>{
+      const v=inp.value;
+      state[grp][k]=(v===""?"":num(v));
+      save(); renderOutputs();
+    });
+  });
+}
+
+function buildRows(){
+  const tb=$("frame-body"); tb.innerHTML="";
+  state.frames.forEach(f=>{
+    const tr=document.createElement("tr"); tr.dataset.id=f.id;
+    tr.innerHTML=`
+      <td class="name"><input class="name-in" type="text" data-k="name" value="${escapeAttr(f.name)}"></td>
+      <td><input class="num" type="number" data-k="stack" step="1" inputmode="numeric" value="${f.stack}"></td>
+      <td><input class="num" type="number" data-k="reach" step="1" inputmode="numeric" value="${f.reach}"></td>
+      <td class="o-dstack"></td>
+      <td class="o-dreach"></td>
+      <td class="o-str"></td>
+      <td class="rec o-rec"></td>
+      <td class="o-status"></td>
+      <td><button class="del-btn" tabindex="-1" title="Rahmen entfernen" aria-label="entfernen">×</button></td>`;
+    tr.querySelectorAll("input").forEach(inp=>{
+      inp.addEventListener("input",()=>{
+        const k=inp.dataset.k;
+        f[k]=(k==="name")?inp.value:(inp.value===""?"":num(inp.value));
+        save(); renderOutputs();
+      });
+    });
+    tr.querySelector(".del-btn").addEventListener("click",()=>{
+      state.frames=state.frames.filter(x=>x.id!==f.id);
+      save(); buildRows(); renderOutputs();
+    });
+    tb.appendChild(tr);
+  });
+}
+
+function renderOutputs(){
+  // rows stay in list order — never auto-sorted; only computed cells + plot refresh
+  const comp={};
+  state.frames.forEach(f=>comp[f.id]=compensate(f));
+  state.frames.forEach(f=>{
+    const c=comp[f.id];
+    const tr=document.querySelector(`tr[data-id="${f.id}"]`);
+    if(!tr) return;
+    tr.querySelector(".o-dstack").innerHTML=deltaCell(c.dStack);
+    tr.querySelector(".o-dreach").innerHTML=deltaCell(c.dReach);
+    tr.querySelector(".o-str").textContent=c.str.toFixed(2);
+    tr.querySelector(".o-rec").innerHTML=recText(c);
+    tr.querySelector(".o-status").innerHTML=statusPill(c.status);
+  });
+  drawPlot(comp);
+}
+
+function deltaCell(v){
+  const cls=v>0?"pos":(v<0?"neg":"");
+  return `<span class="delta ${cls}">${signed(v)}</span>`;
+}
+function statusPill(s){
+  const label={good:"passend",warn:"grenzwertig",crit:"schwierig"}[s];
+  return `<span class="pill ${s}">${label}</span>`;
+}
+// remaining deviation as plain-text items, each with its direction in parentheses (for the hover tooltip)
+function restItems(c){
+  const items=[];
+  if(Math.abs(c.resStack)>=1) items.push(`${signed(c.resStack)} mm Stack (${c.resStack>0?"zu tief":"zu hoch"})`);
+  if(Math.abs(c.resReach)>=1) items.push(`${signed(c.resReach)} mm Reach (${c.resReach>0?"zu kurz":"zu lang"})`);
+  return items;
+}
+function recText(c){
+  const parts=[];
+  if(c.spacer>0.5) parts.push(`${fmt(c.spacer)} mm Spacer`);
+  parts.push(`${fmt(c.stem)} mm Vorbau`);
+  // table version: value on one line, its direction on the next
+  const rest=[];
+  if(Math.abs(c.resStack)>=1) rest.push(`${signed(c.resStack)} mm Stack<br>(${c.resStack>0?"zu tief":"zu hoch"})`);
+  if(Math.abs(c.resReach)>=1) rest.push(`${signed(c.resReach)} mm Reach<br>(${c.resReach>0?"zu kurz":"zu lang"})`);
+  const restStr=rest.length?`Rest <b>${rest.join("<br>")}</b>`:`<b>exakt getroffen</b>`;
+  return `${parts.join(" · ")} → ${restStr}`;
+}
+function escapeAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
+
+/* ---------- explicit sort (button only — rows are NEVER auto-sorted) ---------- */
+function sortFrames(){
+  const comp={};
+  state.frames.forEach(f=>comp[f.id]=compensate(f));
+  const rank={good:0,warn:1,crit:2};
+  const dist=c=>Math.hypot(c.resStack,c.resReach); // remaining deviation after cockpit correction
+  state.frames.sort((a,b)=>{
+    const ca=comp[a.id],cb=comp[b.id];
+    return (rank[ca.status]-rank[cb.status]) || (dist(ca)-dist(cb));
+  });
+  save(); buildRows(); renderOutputs();
+}
+$("btn-sort").addEventListener("click",sortFrames);
+
+/* ---------- plot ---------- */
+function niceTicks(min,max,count){
+  const span=max-min||1;
+  const raw=span/count;
+  const mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  const norm=raw/mag;
+  let step; if(norm<1.5)step=1;else if(norm<3)step=2;else if(norm<7)step=5;else step=10;
+  step*=mag;
+  const s=Math.ceil(min/step)*step;
+  const ticks=[];
+  for(let v=s;v<=max+1e-6;v+=step) ticks.push(Math.round(v*100)/100);
+  return {ticks,step};
+}
+function drawPlot(comp){
+  // Reach (X, forward) vs Stack (Y, up). Focused on the target crosshair and the frame endpoints.
+  const W=680,H=470,m={t:28,r:110,b:44,l:52};
+  const iw=W-m.l-m.r, ih=H-m.t-m.b;
+  const t=state.target;
+  const colorFor=s=>({good:"var(--good)",warn:"var(--warn)",crit:"var(--crit)"}[s]);
+
+  let rs=[num(t.reach)-state.tol.reach, num(t.reach)+state.tol.reach];
+  let ss=[num(t.stack)-state.tol.stack, num(t.stack)+state.tol.stack];
+  state.frames.forEach(f=>{ rs.push(num(f.reach)); ss.push(num(f.stack));
+    if(state.showVectors){rs.push(comp[f.id].compReach); ss.push(comp[f.id].compStack);} });
+  let rmin=Math.min(...rs),rmax=Math.max(...rs),smin=Math.min(...ss),smax=Math.max(...ss);
+  const rp=(rmax-rmin)*0.14+8, sp=(smax-smin)*0.14+8;
+  rmin-=rp;rmax+=rp;smin-=sp;smax+=sp;
+  const X=v=>m.l+(v-rmin)/(rmax-rmin)*iw;
+  const Y=v=>m.t+(1-(v-smin)/(smax-smin))*ih;
+  const clampY=v=>Math.max(m.t+7,Math.min(m.t+ih-3,v));
+
+  const rt=niceTicks(rmin,rmax,6), st=niceTicks(smin,smax,6);
+  let g="";
+  rt.ticks.forEach(v=>{const x=X(v);g+=`<line x1="${x}" y1="${m.t}" x2="${x}" y2="${m.t+ih}" class="grid"/>`;});
+  st.ticks.forEach(v=>{const y=Y(v);g+=`<line x1="${m.l}" y1="${y}" x2="${m.l+iw}" y2="${y}" class="grid"/>`;});
+  rt.ticks.forEach(v=>{const x=X(v);g+=`<text x="${x}" y="${m.t+ih+16}" class="axlab" text-anchor="middle">${fmt(v)}</text>`;});
+  st.ticks.forEach(v=>{const y=Y(v);g+=`<text x="${m.l-8}" y="${y+3.5}" class="axlab" text-anchor="end">${fmt(v)}</text>`;});
+  g+=`<text x="${m.l+iw/2}" y="${H-6}" class="axtitle" text-anchor="middle">REACH · mm →</text>`;
+  g+=`<text x="14" y="${m.t+ih/2}" class="axtitle" text-anchor="middle" transform="rotate(-90 14 ${m.t+ih/2})">↑ STACK · mm</text>`;
+
+  // tolerance box
+  const rx1=X(t.reach-state.tol.reach),rx2=X(t.reach+state.tol.reach);
+  const ry1=Y(t.stack+state.tol.stack),ry2=Y(t.stack-state.tol.stack);
+  g+=`<rect x="${Math.min(rx1,rx2)}" y="${Math.min(ry1,ry2)}" width="${Math.abs(rx2-rx1)}" height="${Math.abs(ry2-ry1)}" class="tolbox"/>`;
+
+  // enlarged target crosshair: faint full guides + bold reticle (ring + long plus + centre dot)
+  const tx=X(t.reach),ty=Y(t.stack);
+  g+=`<line x1="${tx}" y1="${m.t}" x2="${tx}" y2="${m.t+ih}" class="cross"/>`;
+  g+=`<line x1="${m.l}" y1="${ty}" x2="${m.l+iw}" y2="${ty}" class="cross"/>`;
+  g+=`<circle cx="${tx}" cy="${ty}" r="15" class="cross-ring"/>`;
+  g+=`<line x1="${tx-26}" y1="${ty}" x2="${tx+26}" y2="${ty}" class="cross-core"/>`;
+  g+=`<line x1="${tx}" y1="${ty-26}" x2="${tx}" y2="${ty+26}" class="cross-core"/>`;
+  g+=`<circle cx="${tx}" cy="${ty}" r="3.2" fill="var(--accent)"/>`;
+  g+=`<text x="${tx}" y="${m.t-9}" text-anchor="middle" class="ptlab tgt">ZIEL ${fmt(t.reach)} / ${fmt(t.stack)}</text>`;
+
+  // optional correction vectors (raw -> compensated)
+  const showVec=!!state.showVectors;
+  let vecs="";
+  if(showVec){
+    state.frames.forEach(f=>{
+      const c=comp[f.id];
+      const x0=X(num(f.reach)),y0=Y(num(f.stack)),x1=X(c.compReach),y1=Y(c.compStack);
+      if(Math.hypot(x1-x0,y1-y0)>2){
+        vecs+=`<line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" class="connector"/>`;
+        vecs+=`<circle cx="${x1}" cy="${y1}" r="3" fill="none" stroke="${colorFor(c.status)}" stroke-width="1.3" stroke-dasharray="2 1.5"/>`;
+      }
+    });
+  }
+
+  // frame endpoints, coloured by feasibility, labels fanned outward + de-cluttered vertically
+  const items=state.frames.map(f=>{
+    const c=comp[f.id];
+    return {f,c,x:X(num(f.reach)),y:clampY(Y(num(f.stack))),col:colorFor(c.status)};
+  });
+  const order=items.slice().sort((a,b)=>a.y-b.y);
+  order.forEach((it,i)=>{ it.ly=(i===0)?it.y:Math.max(it.y,order[i-1].ly+13); });
+  const overflow=order.length?order[order.length-1].ly-(m.t+ih-3):0;
+  if(overflow>0) order.forEach(it=>it.ly=clampY(it.ly-overflow));
+
+  let pts="";
+  items.forEach(it=>{
+    const {f,c,x,y,col,ly}=it;
+    const w=shortName(f.name).length*5.4;
+    let toRight=x>=tx;
+    if(toRight && x+12+w>W-2) toRight=false;
+    if(!toRight && x-12-w<m.l+2) toRight=true;
+    const lx=toRight?x+9:x-9, anchor=toRight?"start":"end";
+    const ri=restItems(c);
+    const restTxt=ri.length?`Rest ${ri.join(" / ")}`:"exakt im Ziel";
+    const title=`${f.name} · Stack ${fmt(num(f.stack))} / Reach ${fmt(num(f.reach))} · ${restTxt}`;
+    pts+=`<g><title>${escapeAttr(title)}</title>`;
+    if(Math.abs(ly-y)>5) pts+=`<line x1="${x}" y1="${y}" x2="${lx+(toRight?-2:2)}" y2="${ly-3}" class="leader"/>`;
+    pts+=`<circle cx="${x}" cy="${y}" r="5" fill="${col}" stroke="var(--surface)" stroke-width="1.5"/>`;
+    pts+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" class="ptlab">${escapeAttr(shortName(f.name))}</text>`;
+    pts+=`</g>`;
+  });
+
+  const svg=`<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="Zielkreuz Reach gegen Stack mit den Rahmen-Endpunkten">
+    <style>
+      .grid{stroke:var(--grid);stroke-width:1}
+      .axlab{fill:var(--faint);font-family:"IBM Plex Mono",monospace;font-size:10px}
+      .axtitle{fill:var(--muted);font-family:"Barlow Condensed",sans-serif;font-size:11px;letter-spacing:.08em}
+      .tolbox{fill:var(--accent-soft);opacity:.4;stroke:var(--accent);stroke-width:1;stroke-dasharray:3 3}
+      .cross{stroke:var(--accent);stroke-width:1;stroke-dasharray:2 5;opacity:.3}
+      .cross-ring{fill:none;stroke:var(--accent);stroke-width:1.8;opacity:.85}
+      .cross-core{stroke:var(--accent);stroke-width:2.6;stroke-linecap:round}
+      .connector{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:2 3;opacity:.6}
+      .leader{stroke:var(--line-strong);stroke-width:.8}
+      .ptlab{fill:var(--ink);font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:500;
+        paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+      .ptlab.tgt{fill:var(--accent);font-family:"Barlow Condensed",sans-serif;font-weight:700;letter-spacing:.05em;font-size:12px}
+    </style>
+    ${g}${vecs}${pts}
+  </svg>`;
+  $("plot").innerHTML=svg;
+}
+function shortName(n){return n.replace(/^Beispiel\s+/i,"").slice(0,20);}
+
+/* ---------- actions ---------- */
+$("btn-add").addEventListener("click",()=>{
+  const t=state.target;
+  const nf={id:id(),name:"Neuer Rahmen",stack:t.stack,reach:t.reach};
+  state.frames.push(nf); // always appended at the bottom
+  save(); buildRows(); renderOutputs();
+  const tr=$("frame-body").querySelector(`tr[data-id="${nf.id}"]`);
+  if(tr){tr.scrollIntoView({block:"nearest"}); const ni=tr.querySelector(".name-in"); ni.focus(); ni.select();}
+});
+$("btn-reset").addEventListener("click",()=>{
+  if(!confirm("Beispiel-Datensatz laden? Deine aktuellen Rahmen werden ersetzt.")) return;
+  const d=defaults(); state.frames=d.frames; state.target=d.target;
+  save(); syncInputs(); buildRows(); renderOutputs();
+});
+let downloadsNS=null;
+$("btn-export").disabled=true;
+$("btn-export").title="Speichern wird vorbereitet …";
+(async()=>{
+  try{
+    const ns=window.claude&&claude.use?await claude.use("downloads"):null;
+    if(ns){ downloadsNS=ns; $("btn-export").disabled=false; $("btn-export").title="Alle Daten als JSON sichern"; }
+    else { $("btn-export").hidden=true; }
+  }catch(e){ $("btn-export").hidden=true; }
+})();
+$("btn-export").addEventListener("click",async()=>{
+  if(!downloadsNS) return;
+  const data=JSON.stringify(state,null,2);
+  try{
+    await downloadsNS.save({filename:"rahmen-fit.json",data});
+  }catch(err){
+    if(err&&err.code==="declined") return;
+    alert("Export nicht möglich: "+((err&&err.message)||"unbekannt"));
+  }
+});
+$("btn-import").addEventListener("click",()=>$("file-import").click());
+$("file-import").addEventListener("change",e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const s=JSON.parse(r.result);
+      if(!s.frames||!Array.isArray(s.frames)) throw new Error("kein gültiger Datensatz");
+      s.frames.forEach(f=>{if(!f.id)f.id=id();});
+      state=Object.assign(defaults(),s); state.example=false;
+      save(); syncInputs(); buildRows(); renderOutputs(); updateBanner();
+    }catch(err){alert("Import fehlgeschlagen: "+err.message);}
+  };
+  r.readAsText(file); e.target.value="";
+});
+$("btn-dismiss-banner").addEventListener("click",()=>{
+  state.example=false; save(); updateBanner();
+});
+
+function syncInputs(){
+  $("t-stack").value=state.target.stack; $("t-reach").value=state.target.reach;
+  $("tol-reach").value=state.tol.reach; $("tol-stack").value=state.tol.stack;
+  $("sp-max").value=state.budget.spacerMax; $("st-min").value=state.budget.stemMin; $("st-max").value=state.budget.stemMax;
+}
+function updateBanner(){ $("example-banner").hidden=!state.example; }
+
+/* ---------- theme toggle ---------- */
+(function(){
+  const KT="rahmenfit_theme";
+  let th=null; try{th=localStorage.getItem(KT);}catch(e){}
+  if(th) document.documentElement.setAttribute("data-theme",th);
+  $("btn-theme").addEventListener("click",()=>{
+    const cur=document.documentElement.getAttribute("data-theme");
+    const isDark = cur ? cur==="dark" : matchMedia("(prefers-color-scheme:dark)").matches;
+    const next=isDark?"light":"dark";
+    document.documentElement.setAttribute("data-theme",next);
+    try{localStorage.setItem(KT,next);}catch(e){}
+    renderOutputs();
+  });
+})();
+
+/* ---------- vector toggle ---------- */
+$("chk-vectors").checked=!!state.showVectors;
+$("chk-vectors").addEventListener("change",()=>{
+  state.showVectors=$("chk-vectors").checked; save(); renderOutputs();
+});
+
+/* ---------- init ---------- */
+bindTop();
+buildRows();
+renderOutputs();
+updateBanner();
+</script>
