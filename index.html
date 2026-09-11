@@ -171,6 +171,8 @@
   td.rec{text-align:left;font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;color:var(--muted);
     white-space:normal;min-width:200px;line-height:1.35}
   td.rec b{color:var(--ink);font-family:"IBM Plex Mono",monospace;font-weight:600}
+  td.rec .rc-k{display:inline-block;min-width:52px;color:var(--muted);font-family:"Barlow Condensed",sans-serif;
+    text-transform:uppercase;letter-spacing:.04em;font-weight:600}
   .del-btn{color:var(--faint);border-color:transparent;background:transparent;font-size:16px;padding:2px 7px}
   .del-btn:hover{color:var(--crit);border-color:var(--crit)}
 
@@ -323,7 +325,7 @@
                 <th>ΔStack</th>
                 <th>ΔReach</th>
                 <th>STR</th>
-                <th class="col-comp">Cockpit-Korrektur → Rest</th>
+                <th class="col-comp">Cockpit-Korrektur</th>
                 <th id="th-status">Passform</th>
                 <th></th>
               </tr>
@@ -605,15 +607,14 @@ function restItems(c){
   return items;
 }
 function recText(c){
-  const parts=[];
-  if(c.spacer>0.5) parts.push(`${fmt(c.spacer)} mm Spacer`);
-  parts.push(`${fmt(c.stem)} mm Vorbau`);
-  // table version: value on one line, its direction on the next
+  // three labelled lines: Spacer, Vorbau, and the remaining deviation with its direction
   const rest=[];
-  if(Math.round(c.resStack)!==0) rest.push(`${signed(c.resStack)} mm Stack<br>(${c.resStack>0?"zu tief":"zu hoch"})`);
-  if(Math.round(c.resReach)!==0) rest.push(`${signed(c.resReach)} mm Reach<br>(${c.resReach>0?"zu kurz":"zu lang"})`);
-  const restStr=rest.length?`Rest <b>${rest.join("<br>")}</b>`:`<b>exakt getroffen</b>`;
-  return `${parts.join(" · ")} → ${restStr}`;
+  if(Math.round(c.resReach)!==0) rest.push(`${Math.abs(Math.round(c.resReach))} mm ${c.resReach>0?"zu kurz":"zu lang"}`);
+  if(Math.round(c.resStack)!==0) rest.push(`${Math.abs(Math.round(c.resStack))} mm ${c.resStack>0?"zu niedrig":"zu hoch"}`);
+  const restStr=rest.length?rest.join("; "):"exakt getroffen";
+  return `<span class="rc-k">Spacer:</span> ${fmt(c.spacer)} mm`
+       +`<br><span class="rc-k">Vorbau:</span> ${fmt(c.stem)} mm`
+       +`<br><span class="rc-k">Rest:</span> <b>${restStr}</b>`;
 }
 function escapeAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
 
