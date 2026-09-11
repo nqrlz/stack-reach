@@ -609,20 +609,17 @@ function recText(c){
 }
 function escapeAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
 
-/* ---------- explicit sort (button only — rows are NEVER auto-sorted) ---------- */
+/* ---------- one shared definition of "best fit", used by Top 5 AND by sorting ----------
+   fits-within-tolerance first (Ampel), then the smallest NATIVE gap to the target
+   (= the least cockpit adjustment / fewest spacers). Budget off: status is null -> pure closeness. */
+function fitCompare(ca,cb){
+  const R=s=>({good:0,warn:1,crit:2}[s] ?? 0);
+  return (R(ca.status)-R(cb.status)) || (ca.dist-cb.dist);
+}
 function sortFrames(){
   const comp={};
   state.frames.forEach(f=>comp[f.id]=compensate(f));
-  if(state.budgetEnabled){
-    const rank={good:0,warn:1,crit:2};
-    const rdist=c=>Math.hypot(c.resStack,c.resReach); // remaining deviation after cockpit correction
-    state.frames.sort((a,b)=>{
-      const ca=comp[a.id],cb=comp[b.id];
-      return (rank[ca.status]-rank[cb.status]) || (rdist(ca)-rdist(cb));
-    });
-  } else {
-    state.frames.sort((a,b)=>comp[a.id].dist-comp[b.id].dist); // raw closeness to target, closest first
-  }
+  state.frames.sort((a,b)=>fitCompare(comp[a.id],comp[b.id]));
   save(); buildRows(); renderOutputs();
 }
 $("btn-sort").addEventListener("click",sortFrames);
@@ -781,14 +778,13 @@ armConfirm($("btn-reset"),"Beispiele wirklich laden?",()=>{
 
 /* ---------- best fit: scan the whole database for the closest bike/size ---------- */
 function findBestFits(n){
-  // rank every bike/size by NATIVE closeness to the target (raw distance sqrt(dStack^2+dReach^2)),
-  // return the n closest. Spacer/stem stay a fine-tuning detail, not the ranking.
+  // same "best fit" definition as sorting (fitCompare): fits-in-tolerance first, then least native gap
   const list=[];
   BIKE_DB.forEach(b=>b.sizes.forEach(s=>{
     const c=compensate({stack:s.stack,reach:s.reach});
-    list.push({b,s,c,dist:c.dist});
+    list.push({b,s,c});
   }));
-  list.sort((a,b)=>a.dist-b.dist);
+  list.sort((a,b)=>fitCompare(a.c,b.c));
   return list.slice(0,n);
 }
 $("btn-bestfit").addEventListener("click",()=>{
