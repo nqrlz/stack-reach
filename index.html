@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rahmen-Fit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -207,6 +208,21 @@
   .example-banner strong{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.04em}
   .example-banner button{margin-left:auto;font-size:12px;padding:5px 10px}
 
+  .share-bar{display:flex;gap:9px;align-items:center;background:var(--accent-soft);
+    color:var(--ink);border-radius:9px;padding:9px 13px;margin-bottom:18px}
+  .share-bar strong{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+    letter-spacing:.04em;font-size:13px;white-space:nowrap}
+  .share-bar input{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;padding:7px 9px;border:1px solid var(--line-strong);border-radius:7px;
+    background:var(--surface);color:var(--ink)}
+  .share-bar button{font-size:12px;padding:6px 11px}
+  .share-bar #btn-share-close{padding:6px 9px}
+  @media (max-width:560px){
+    .share-bar{flex-wrap:wrap}
+    .share-bar input{flex-basis:100%;order:3}
+    .share-bar #btn-share-copy{margin-left:auto}
+  }
+
   details.assump{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
   details.assump summary{cursor:pointer;font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
     letter-spacing:.05em;font-size:12.5px;color:var(--muted);font-weight:600}
@@ -253,12 +269,20 @@
       <span class="tag">Deine Fit-Zielwerte gegen Rahmen-Geometrien — mit Spacer- und Vorbau-Korrektur.</span>
     </div>
     <div class="top-actions">
+      <button class="ghost" id="btn-share" title="Diesen Vergleich als Link teilen">↗&#xFE0E; Teilen</button>
       <button class="ghost" id="btn-export" title="Alle Daten als JSON sichern">Export</button>
       <button class="ghost" id="btn-import" title="JSON laden">Import</button>
       <input type="file" id="file-import" accept="application/json,.json" hidden>
       <button class="icon ghost" id="btn-theme" title="Hell/Dunkel umschalten" aria-label="Theme umschalten">◐&#xFE0E;</button>
     </div>
   </header>
+
+  <div class="share-bar" id="share-bar" hidden>
+    <strong>Link zum Vergleich</strong>
+    <input type="text" id="share-url" readonly aria-label="Vergleichs-Link" onfocus="this.select()">
+    <button class="btn primary" id="btn-share-copy">Kopieren</button>
+    <button class="ghost" id="btn-share-close" aria-label="Schließen">✕&#xFE0E;</button>
+  </div>
 
   <div class="example-banner" id="example-banner" hidden>
     <strong>Beispieldaten</strong>
@@ -404,7 +428,54 @@
 <script>
 "use strict";
 const KEY="rahmenfit_v1";
+const SHARE_KEY="v";
 const $=id=>document.getElementById(id);
+
+/* ---------- shareable-comparison link (URL hash) ---------- */
+// compact codec: JSON -> UTF-8 -> base64url, so the whole comparison rides in the hash
+function b64urlEncode(str){
+  return btoa(unescape(encodeURIComponent(str))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function b64urlDecode(str){
+  str=str.replace(/-/g,"+").replace(/_/g,"/"); while(str.length%4) str+="=";
+  return decodeURIComponent(escape(atob(str)));
+}
+// only carry what the comparison + verdict need; drop ids/seq/example (rebuilt on load)
+function encodeShare(st){
+  const p={
+    m: st.mode==="cockpit"?1:0,
+    t: [Math.round(st.target.stack), Math.round(st.target.reach)],
+    c: [st.cockpit.reachBar, st.cockpit.stackBarTop, st.cockpit.stem, st.cockpit.angle, st.cockpit.spacer, st.cockpit.hta].map(Number),
+    tol: [Number(st.tol.reach), Number(st.tol.stack)],
+    b: [Number(st.budget.spacerMax), Number(st.budget.stemMin), Number(st.budget.stemMax)],
+    be: st.budgetEnabled?1:0,
+    sv: st.showVectors?1:0,
+    f: st.frames.map(f=>[String(f.name), Number(f.stack), Number(f.reach)])
+  };
+  return b64urlEncode(JSON.stringify(p));
+}
+function decodeShare(code){
+  const p=JSON.parse(b64urlDecode(code));
+  if(!p||!Array.isArray(p.f)) throw new Error("kein gültiger Link");
+  const st=defaults();
+  st.example=false;
+  st.mode = p.m?"cockpit":"frame";
+  if(Array.isArray(p.t)) st.target={stack:num(p.t[0]),reach:num(p.t[1])};
+  if(Array.isArray(p.c)) st.cockpit={reachBar:num(p.c[0]),stackBarTop:num(p.c[1]),stem:num(p.c[2]),angle:num(p.c[3]),spacer:num(p.c[4]),hta:num(p.c[5])};
+  if(Array.isArray(p.tol)) st.tol={reach:num(p.tol[0]),stack:num(p.tol[1])};
+  if(Array.isArray(p.b)) st.budget={spacerMax:num(p.b[0]),stemMin:num(p.b[1]),stemMax:num(p.b[2])};
+  st.budgetEnabled = p.be?true:false;
+  st.showVectors = p.sv?true:false;
+  st.frames = p.f.map((row,i)=>({id:id(),seq:i,name:String(row[0]??"Rahmen"),stack:num(row[1]),reach:num(row[2])}));
+  return st;
+}
+function readShareHash(){
+  const h=(location.hash||"").replace(/^#/,"");
+  if(!h) return null;
+  const m=new URLSearchParams(h).get(SHARE_KEY);
+  if(!m) return null;
+  try{ return decodeShare(m); }catch(e){ return null; }
+}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const num=v=>{const n=parseFloat(v);return isFinite(n)?n:0;};
 const fmt=v=>Math.round(v);
@@ -516,6 +587,8 @@ const BIKE_DB=[
 
 let state=load();
 function load(){
+  const shared=readShareHash();
+  if(shared) return shared;   // a shared link wins: show exactly that comparison
   try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.frames)return Object.assign(defaults(),s);}catch(e){}
   return defaults();
 }
@@ -942,6 +1015,38 @@ $("file-import").addEventListener("change",e=>{
   };
   r.readAsText(file); e.target.value="";
 });
+/* ---------- share this comparison as a link ---------- */
+function buildShareUrl(){
+  const base=location.origin+location.pathname+location.search;   // drop any existing hash
+  return base+"#"+SHARE_KEY+"="+encodeShare(state);
+}
+$("btn-share").addEventListener("click",async()=>{
+  if(!state.frames.length){ $("db-hint").textContent="Erst Rahmen in die Tabelle legen, dann teilen."; return; }
+  const url=buildShareUrl();
+  $("share-url").value=url;
+  $("share-bar").hidden=false;
+  $("share-url").focus(); $("share-url").select();
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(url);
+      flashShareCopy("Kopiert ✓");
+    }
+  }catch(e){/* clipboard blocked in sandbox — the field is selected for manual copy */}
+});
+function flashShareCopy(txt){
+  const b=$("btn-share-copy"), old=b.textContent;
+  b.textContent=txt; setTimeout(()=>{b.textContent=old;},1600);
+}
+$("btn-share-copy").addEventListener("click",async()=>{
+  const url=$("share-url").value||buildShareUrl();
+  $("share-url").value=url; $("share-url").focus(); $("share-url").select();
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(url); flashShareCopy("Kopiert ✓"); return; }
+    document.execCommand("copy"); flashShareCopy("Kopiert ✓");
+  }catch(e){ flashShareCopy("Manuell kopieren"); }
+});
+$("btn-share-close").addEventListener("click",()=>{ $("share-bar").hidden=true; });
+
 $("btn-dismiss-banner").addEventListener("click",()=>{
   state.example=false; save(); updateBanner();
 });
@@ -1047,4 +1152,10 @@ buildRows();
 applyBudgetUI();
 renderOutputs();
 updateBanner();
+// if we opened via a shared link, adopt it as the working set and clear the hash
+// so the user's own edits (and reloads) are no longer overridden by the URL
+if(readShareHash()){
+  save();
+  try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+}
 </script>
