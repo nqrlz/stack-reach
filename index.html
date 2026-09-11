@@ -757,6 +757,7 @@ function renderOutputs(){
   });
   $("frame-table").classList.toggle("no-budget", off);
   drawPlot(comp);
+  if(typeof refreshBestMark==="function") refreshBestMark();  // keep the DB "beste Größe" ★ in sync with the target
 }
 function closestFrameId(comp){
   let best=Infinity, id=null;
@@ -1131,14 +1132,40 @@ function populateBikeDB(){
     });
   populateSizes();
 }
+// index of the size that fits the current target best (same "best fit" ranking as sort/Top-5)
+function bestSizeIndex(b){
+  let best=-1, bestC=null;
+  b.sizes.forEach((s,i)=>{
+    const c=compensate({stack:s.stack,reach:s.reach});
+    if(best<0 || fitCompare(c,bestC)<0){ best=i; bestC=c; }
+  });
+  return best;
+}
+function sizeLabel(s,isBest){ return `${s.size} · ${s.stack}/${s.reach}${isBest?" ★︎":""}`; }
+function bestHint(b,idx){
+  const s=b.sizes[idx];
+  const c=compensate({stack:s.stack,reach:s.reach});
+  let txt=`Beste Größe für dein Ziel: ${s.size}`;
+  if(state.budgetEnabled && c.status) txt+=` — ${ {good:"passend",warn:"grenzwertig",crit:"schwierig"}[c.status] }`;
+  return txt;
+}
 function populateSizes(){
   const b=BIKE_DB[+$("db-bike").value], sel=$("db-size"); sel.innerHTML="";
   if(!b) return;
+  const best=bestSizeIndex(b);
   b.sizes.forEach((s,i)=>{
     const o=document.createElement("option");
-    o.value=i; o.textContent=`${s.size} · ${s.stack}/${s.reach}`;
+    o.value=i; o.textContent=sizeLabel(s,i===best);
     sel.appendChild(o);
   });
+  if(best>=0){ sel.value=best; $("db-hint").textContent=bestHint(b,best); }  // pre-select the best-fitting size
+}
+// keep the ★ marker current when the target/tolerances change, without disturbing the user's own pick
+function refreshBestMark(){
+  const b=BIKE_DB[+$("db-bike").value], sel=$("db-size");
+  if(!b || !sel.options.length) return;
+  const best=bestSizeIndex(b);
+  [...sel.options].forEach((o,i)=>{ if(b.sizes[i]) o.textContent=sizeLabel(b.sizes[i],i===best); });
 }
 $("db-bike").addEventListener("change",populateSizes);
 $("btn-db-add").addEventListener("click",()=>{
