@@ -1,3 +1,4 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rahmen-Fit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -202,6 +203,36 @@
   details.assump code{font-family:"IBM Plex Mono",monospace;background:var(--surface-2);padding:1px 4px;border-radius:4px;font-size:11.5px}
 
   @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+  /* ---------- phone layout ---------- */
+  .scroll{-webkit-overflow-scrolling:touch}
+  @media (max-width:560px){
+    .wrap{padding:16px 12px 44px}
+    header.top{padding-bottom:12px;margin-bottom:16px}
+    .brand{gap:8px}
+    .brand h1{font-size:28px}
+    .brand .tag{font-size:12.5px}
+    /* bigger tap targets */
+    button,.btn{padding:10px 14px;font-size:15px}
+    button.icon{padding:9px 11px}
+    /* 16px inputs stop iOS from zooming in on focus */
+    input[type=text],input[type=number]{font-size:16px}
+    td input{font-size:16px}
+    aside .panel{padding:14px}
+    /* stack paired inputs so nothing gets squeezed off-screen */
+    .grid2{grid-template-columns:1fr}
+    /* database picker + action buttons: full-width rows, easy to tap */
+    .db-picker{gap:8px}
+    .db-picker select{flex:1 1 100%;min-width:0}
+    .db-picker button{flex:1 1 45%}
+    .db-picker .db-hint{margin-left:0;width:100%}
+    .addrow button{flex:1 1 45%}
+    /* declutter + keep the wide table comfortably scrollable */
+    .table-head .row-hint{display:none}
+    td.rec{min-width:150px}
+    .plot-head h2, .table-head h2{font-size:17px}
+    .legend{font-size:11px;gap:10px}
+  }
 </style>
 
 <div class="wrap">
