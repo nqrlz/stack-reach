@@ -794,11 +794,19 @@ function recText(c){
 function escapeAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
 
 /* ---------- one shared definition of "best fit", used by Top 5 AND by sorting ----------
-   fits-within-tolerance first (Ampel), then the smallest NATIVE gap to the target
-   (= the least cockpit adjustment / fewest spacers). Budget off: status is null -> pure closeness. */
+   1) fits-within-tolerance first (Ampel: good < warn < crit)
+   2) BALANCED tiebreak (fitCost): how close the CORRECTED position sits to the target
+      (residual after spacer+stem), PLUS a penalty per mm of spacer. So an exact fit wins,
+      but a frame that only gets there with lots of spacers is pushed back down.
+   Budget off: no correction data -> fall back to the raw native distance. */
+const SPACER_PENALTY=0.15;   // mm of "cost" added per mm of spacer used (tunable)
+function fitCost(c){
+  if(!c.active) return c.dist;                                   // budget off -> raw closeness
+  return Math.hypot(c.resStack,c.resReach) + SPACER_PENALTY*Math.abs(c.spacer||0);
+}
 function fitCompare(ca,cb){
   const R=s=>({good:0,warn:1,crit:2}[s] ?? 0);
-  return (R(ca.status)-R(cb.status)) || (ca.dist-cb.dist);
+  return (R(ca.status)-R(cb.status)) || (fitCost(ca)-fitCost(cb));
 }
 function sortFrames(){
   const comp={};
