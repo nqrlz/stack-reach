@@ -6,12 +6,12 @@
 <style>
   :root{
     --ground:#EEF0F2; --surface:#FFFFFF; --surface-2:#F7F8FA;
-    --ink:#14171C; --muted:#616B7A; --faint:#8A93A0;
+    --ink:#14171C; --muted:#5A6474; --faint:#5F6875;
     --line:#D6DAE0; --line-strong:#BFC6CF;
-    --accent:#2457D6; --accent-soft:#DCE4FB;
-    --good:#2F9E44; --good-bg:#E4F3E7;
-    --warn:#E8850C; --warn-bg:#FBEED8;
-    --crit:#E03131; --crit-bg:#FBE0E0;
+    --accent:#2050CC; --accent-soft:#DCE4FB;
+    --good:#2F9E44; --good-bg:#E4F3E7; --good-tx:#1E7A34;
+    --warn:#E8850C; --warn-bg:#FBEED8; --warn-tx:#9E5400;
+    --crit:#E03131; --crit-bg:#FBE0E0; --crit-tx:#C01C1C;
     --grid:#E3E6EA; --grid-strong:#CDD3DA;
     --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
   }
@@ -19,24 +19,24 @@
   @media (prefers-color-scheme: dark){
     :root:not([data-theme="light"]){
       --ground:#111418; --surface:#191D23; --surface-2:#1F242B;
-      --ink:#E8EBEF; --muted:#9AA4B0; --faint:#6E7884;
+      --ink:#E8EBEF; --muted:#A2ABB6; --faint:#8B94A1;
       --line:#2A313A; --line-strong:#3A434E;
       --accent:#6E93FF; --accent-soft:#22304F;
-      --good:#5BC46B; --good-bg:#193322;
-      --warn:#F0A742; --warn-bg:#3A2C16;
-      --crit:#F0605F; --crit-bg:#3A1E1E;
+      --good:#5BC46B; --good-bg:#193322; --good-tx:#6ED07C;
+      --warn:#F0A742; --warn-bg:#3A2C16; --warn-tx:#F3B25C;
+      --crit:#F0605F; --crit-bg:#3A1E1E; --crit-tx:#F47B7A;
       --grid:#232A32; --grid-strong:#333C46;
       --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
     }
   }
   :root[data-theme="dark"]{
     --ground:#111418; --surface:#191D23; --surface-2:#1F242B;
-    --ink:#E8EBEF; --muted:#9AA4B0; --faint:#6E7884;
+    --ink:#E8EBEF; --muted:#A2ABB6; --faint:#8B94A1;
     --line:#2A313A; --line-strong:#3A434E;
     --accent:#6E93FF; --accent-soft:#22304F;
-    --good:#5BC46B; --good-bg:#193322;
-    --warn:#F0A742; --warn-bg:#3A2C16;
-    --crit:#F0605F; --crit-bg:#3A1E1E;
+    --good:#5BC46B; --good-bg:#193322; --good-tx:#6ED07C;
+    --warn:#F0A742; --warn-bg:#3A2C16; --warn-tx:#F3B25C;
+    --crit:#F0605F; --crit-bg:#3A1E1E; --crit-tx:#F47B7A;
     --grid:#232A32; --grid-strong:#333C46;
     --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px rgba(0,0,0,.35);
   }
@@ -97,7 +97,7 @@
 
   .field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px}
   .field:last-child{margin-bottom:0}
-  .field label{font-size:11.5px;letter-spacing:.03em;color:var(--muted);text-transform:uppercase;
+  .field label{font-size:12px;letter-spacing:.03em;color:var(--muted);text-transform:uppercase;
     font-family:"Barlow Condensed",sans-serif;font-weight:600}
   .field .in{position:relative;display:flex;align-items:center}
   input[type=text],input[type=number]{width:100%;font-family:"IBM Plex Mono",monospace;
@@ -108,7 +108,7 @@
   .field .unit{position:absolute;right:10px;font-size:11px;color:var(--faint);
     font-family:"Barlow Condensed",sans-serif;letter-spacing:.04em;pointer-events:none}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .row-hint{font-size:11.5px;color:var(--faint);margin-top:8px;line-height:1.35}
+  .row-hint{font-size:12.5px;color:var(--faint);margin-top:8px;line-height:1.4}
 
   .target-panel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset,var(--shadow)}
   .target-panel .eyebrow .n{color:var(--accent)}
@@ -162,13 +162,13 @@
   #frame-body input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   #frame-body input[type=number]{-moz-appearance:textfield}
   .delta.pos{color:var(--accent)}
-  .delta.neg{color:var(--warn)}
+  .delta.neg{color:var(--warn-tx)}
   .pill{display:inline-block;font-family:"Barlow Condensed",sans-serif;font-weight:600;
-    text-transform:uppercase;letter-spacing:.04em;font-size:11px;padding:2px 9px;border-radius:20px;white-space:nowrap}
-  .pill.good{background:var(--good-bg);color:var(--good)}
-  .pill.warn{background:var(--warn-bg);color:var(--warn)}
-  .pill.crit{background:var(--crit-bg);color:var(--crit)}
-  td.rec{text-align:left;font-family:"IBM Plex Sans",sans-serif;font-size:12px;color:var(--muted);
+    text-transform:uppercase;letter-spacing:.04em;font-size:11.5px;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .pill.good{background:var(--good-bg);color:var(--good-tx)}
+  .pill.warn{background:var(--warn-bg);color:var(--warn-tx)}
+  .pill.crit{background:var(--crit-bg);color:var(--crit-tx)}
+  td.rec{text-align:left;font-family:"IBM Plex Sans",sans-serif;font-size:12.5px;color:var(--muted);
     white-space:normal;min-width:200px;line-height:1.35}
   td.rec b{color:var(--ink);font-family:"IBM Plex Mono",monospace;font-weight:600}
   .del-btn{color:var(--faint);border-color:transparent;background:transparent;font-size:16px;padding:2px 7px}
@@ -181,7 +181,7 @@
   .db-picker select{font-family:"IBM Plex Sans",sans-serif;font-size:13px;color:var(--ink);
     background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;cursor:pointer}
   .db-picker select#db-bike{min-width:190px}
-  .db-picker .db-hint{font-size:11px;color:var(--faint);margin-left:auto}
+  .db-picker .db-hint{font-size:12px;color:var(--faint);margin-left:auto}
   @media (max-width:520px){.db-picker .db-hint{margin-left:0;width:100%}}
   .addrow{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   #btn-clear:hover{border-color:var(--crit);color:var(--crit)}
@@ -189,7 +189,7 @@
   @keyframes rowflash{0%{background:var(--accent-soft)}100%{background:transparent}}
   tr.flash{animation:rowflash 1.3s ease-out}
   @media (prefers-reduced-motion:reduce){tr.flash{animation:none}}
-  .note{font-size:12px;color:var(--faint);margin-top:14px;line-height:1.45}
+  .note{font-size:13px;color:var(--faint);margin-top:14px;line-height:1.5}
   .note b{color:var(--muted);font-weight:600}
 
   .example-banner{display:flex;gap:9px;align-items:center;background:var(--accent-soft);
@@ -246,7 +246,7 @@
       <button class="ghost" id="btn-export" title="Alle Daten als JSON sichern">Export</button>
       <button class="ghost" id="btn-import" title="JSON laden">Import</button>
       <input type="file" id="file-import" accept="application/json,.json" hidden>
-      <button class="icon ghost" id="btn-theme" title="Hell/Dunkel umschalten" aria-label="Theme umschalten">◐</button>
+      <button class="icon ghost" id="btn-theme" title="Hell/Dunkel umschalten" aria-label="Theme umschalten">◐&#xFE0E;</button>
     </div>
   </header>
 
@@ -259,7 +259,7 @@
   <div class="layout">
     <aside>
       <div class="panel target-panel">
-        <p class="eyebrow"><span class="n">✛</span> Ziel-Geometrie</p>
+        <p class="eyebrow"><span class="n">✛&#xFE0E;</span> Ziel-Geometrie</p>
         <div class="grid2">
           <div class="field"><label for="t-stack">Ziel-Stack</label>
             <div class="in"><input type="number" id="t-stack" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
@@ -270,7 +270,7 @@
       </div>
 
       <div class="panel" id="budget-panel">
-        <p class="eyebrow eyebrow-row"><span><span class="n">▤</span> Toleranz &amp; Budget</span>
+        <p class="eyebrow eyebrow-row"><span><span class="n">▤&#xFE0E;</span> Toleranz &amp; Budget</span>
           <label class="panel-toggle"><input type="checkbox" id="chk-budget"> aktiv</label></p>
         <div class="budget-body">
           <div class="grid2">
@@ -289,7 +289,7 @@
           </div>
           <p class="row-hint">Wie viel Korrektur per Cockpit realistisch ist. Bestimmt die Ampel <em>nach</em> Kompensation. Vorbau 70–150&nbsp;mm.</p>
         </div>
-        <p class="row-hint budget-off-hint" hidden>Deaktiviert — Spacer/Vorbau virtuell auf 0. Die Rahmen werden roh per Stack/Reach verglichen; die Spalte „Abstand" zeigt <code>√(ΔStack²+ΔReach²)</code>, der nächste Rahmen ist ★ hervorgehoben.</p>
+        <p class="row-hint budget-off-hint" hidden>Deaktiviert — Spacer/Vorbau virtuell auf 0. Die Rahmen werden roh per Stack/Reach verglichen; die Spalte „Abstand" zeigt <code>√(ΔStack²+ΔReach²)</code>, der nächste Rahmen ist ★&#xFE0E; hervorgehoben.</p>
       </div>
     </aside>
 
@@ -301,7 +301,7 @@
             <span class="leg-budget"><span class="dot" style="background:var(--good)"></span>passend</span>
             <span class="leg-budget"><span class="dot" style="background:var(--warn)"></span>grenzwertig</span>
             <span class="leg-budget"><span class="dot" style="background:var(--crit)"></span>schwierig</span>
-            <span><span style="color:var(--accent);font-weight:700">✛</span>Ziel</span>
+            <span><span style="color:var(--accent);font-weight:700">✛&#xFE0E;</span>Ziel</span>
             <label class="vec-toggle leg-budget"><input type="checkbox" id="chk-vectors"> Korrektur-Vektoren</label>
           </div>
         </div>
@@ -332,17 +332,17 @@
           </table>
         </div>
         <div class="db-picker">
-          <span class="db-label">◎ Aus Datenbank</span>
+          <span class="db-label">◎&#xFE0E; Aus Datenbank</span>
           <select id="db-bike" aria-label="Rad wählen"></select>
           <select id="db-size" aria-label="Größe wählen"></select>
           <button class="primary" id="btn-db-add">+ übernehmen</button>
-          <button class="ghost" id="btn-bestfit" title="Die 5 am besten passenden Räder aus der Datenbank finden und eintragen">★ Top 5 aus DB</button>
+          <button class="ghost" id="btn-bestfit" title="Die 5 am besten passenden Räder aus der Datenbank finden und eintragen">★&#xFE0E; Top 5 aus DB</button>
           <span class="db-hint" id="db-hint">Größe · Stack/Reach in mm · Geometrie laut Hersteller</span>
         </div>
 
         <div class="addrow">
           <button class="ghost" id="btn-add">+ Leerer Rahmen</button>
-          <button class="ghost" id="btn-sort" title="Rahmen nach Passform ordnen (beste zuerst)">↕ Nach Passform sortieren</button>
+          <button class="ghost" id="btn-sort" title="Rahmen nach Passform ordnen (beste zuerst)">↕&#xFE0E; Nach Passform sortieren</button>
           <button class="ghost" id="btn-clear" title="Alle Rahmen aus der Vergleichstabelle löschen">Tabelle leeren</button>
           <button class="ghost" id="btn-reset" title="Beispiel-Datensatz wiederherstellen">Beispiele laden</button>
         </div>
@@ -569,7 +569,7 @@ function renderOutputs(){
       // budget off: no cockpit correction — show raw distance to target, mark the closest
       tr.querySelector(".o-rec").textContent="";
       const isClosest=f.id===closestId;
-      tr.querySelector(".o-status").innerHTML=`<span class="dist${isClosest?" closest":""}">${fmt(c.dist)} mm${isClosest?" ★":""}</span>`;
+      tr.querySelector(".o-status").innerHTML=`<span class="dist${isClosest?" closest":""}">${fmt(c.dist)} mm${isClosest?" ★︎":""}</span>`;
     }
   });
   $("frame-table").classList.toggle("no-budget", off);
@@ -723,14 +723,14 @@ function drawPlot(comp){
     if(Math.abs(ly-y)>5) pts+=`<line x1="${x}" y1="${y}" x2="${lx+(toRight?-2:2)}" y2="${ly-3}" class="leader"/>`;
     if(hi) pts+=`<circle cx="${x}" cy="${y}" r="9" fill="none" stroke="var(--accent)" stroke-width="1.8"/>`;
     pts+=`<circle cx="${x}" cy="${y}" r="${hi?6:5}" fill="${col}" stroke="var(--surface)" stroke-width="1.5"/>`;
-    pts+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" class="ptlab${hi?" tgt":""}">${escapeAttr(shortName(f.name))}${hi?" ★":""}</text>`;
+    pts+=`<text x="${lx}" y="${ly}" text-anchor="${anchor}" class="ptlab${hi?" tgt":""}">${escapeAttr(shortName(f.name))}${hi?" ★︎":""}</text>`;
     pts+=`</g>`;
   });
 
   const svg=`<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="Zielkreuz Reach gegen Stack mit den Rahmen-Endpunkten">
     <style>
       .grid{stroke:var(--grid);stroke-width:1}
-      .axlab{fill:var(--faint);font-family:"IBM Plex Mono",monospace;font-size:10px}
+      .axlab{fill:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:11px}
       .axtitle{fill:var(--muted);font-family:"Barlow Condensed",sans-serif;font-size:11px;letter-spacing:.08em}
       .tolbox{fill:var(--accent-soft);opacity:.4;stroke:var(--accent);stroke-width:1;stroke-dasharray:3 3}
       .cross{stroke:var(--accent);stroke-width:1;stroke-dasharray:2 5;opacity:.3}
@@ -738,7 +738,7 @@ function drawPlot(comp){
       .cross-core{stroke:var(--accent);stroke-width:2.6;stroke-linecap:round}
       .connector{stroke:var(--muted);stroke-width:1.2;stroke-dasharray:2 3;opacity:.6}
       .leader{stroke:var(--line-strong);stroke-width:.8}
-      .ptlab{fill:var(--ink);font-family:"IBM Plex Sans",sans-serif;font-size:10.5px;font-weight:500;
+      .ptlab{fill:var(--ink);font-family:"IBM Plex Sans",sans-serif;font-size:11px;font-weight:500;
         paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
       .ptlab.tgt{fill:var(--accent);font-family:"Barlow Condensed",sans-serif;font-weight:700;letter-spacing:.05em;font-size:12px}
     </style>
@@ -879,7 +879,7 @@ function applyBudgetUI(){
   $("budget-panel").classList.toggle("off",!on);
   document.querySelector(".budget-off-hint").hidden=on;
   $("th-status").textContent = on ? "Passform" : "Abstand";
-  $("btn-sort").textContent = on ? "↕ Nach Passform sortieren" : "↕ Nach Nähe sortieren";
+  $("btn-sort").textContent = on ? "↕︎ Nach Passform sortieren" : "↕︎ Nach Nähe sortieren";
   $("chk-vectors").disabled=!on;
   document.querySelectorAll(".leg-budget").forEach(el=>{el.hidden=!on;});
 }
