@@ -336,7 +336,7 @@
           <select id="db-bike" aria-label="Rad wählen"></select>
           <select id="db-size" aria-label="Größe wählen"></select>
           <button class="primary" id="btn-db-add">+ übernehmen</button>
-          <button class="ghost" id="btn-bestfit" title="Das am besten passende Rad aus der Datenbank finden und eintragen">★ Best Fit aus DB</button>
+          <button class="ghost" id="btn-bestfit" title="Die 5 am besten passenden Räder aus der Datenbank finden und eintragen">★ Top 5 aus DB</button>
           <span class="db-hint" id="db-hint">Größe · Stack/Reach in mm · Geometrie laut Hersteller</span>
         </div>
 
@@ -780,26 +780,32 @@ armConfirm($("btn-reset"),"Beispiele wirklich laden?",()=>{
 });
 
 /* ---------- best fit: scan the whole database for the closest bike/size ---------- */
-function findBestFit(){
-  // best fit = frame whose NATIVE geometry sits closest to the target (least cockpit adjustment needed),
-  // measured as the raw distance sqrt(dStack^2 + dReach^2). Spacer/stem stay a fine-tuning detail, not the ranking.
-  let best=null,bestScore=Infinity;
+function findBestFits(n){
+  // rank every bike/size by NATIVE closeness to the target (raw distance sqrt(dStack^2+dReach^2)),
+  // return the n closest. Spacer/stem stay a fine-tuning detail, not the ranking.
+  const list=[];
   BIKE_DB.forEach(b=>b.sizes.forEach(s=>{
     const c=compensate({stack:s.stack,reach:s.reach});
-    if(c.dist<bestScore){bestScore=c.dist;best={b,s,c};}
+    list.push({b,s,c,dist:c.dist});
   }));
-  return best;
+  list.sort((a,b)=>a.dist-b.dist);
+  return list.slice(0,n);
 }
 $("btn-bestfit").addEventListener("click",()=>{
-  const best=findBestFit(); if(!best) return;
-  const {b,s,c}=best;
-  const nf={id:id(),seq:nextSeq(),name:`${b.brand} ${b.model} ${s.size}`,stack:s.stack,reach:s.reach};
-  state.frames.push(nf); state.example=false;
+  const top=findBestFits(5); if(!top.length) return;
+  const added=top.map(({b,s})=>{
+    const nf={id:id(),seq:nextSeq(),name:`${b.brand} ${b.model} ${s.size}`,stack:s.stack,reach:s.reach};
+    state.frames.push(nf); return nf;
+  });
+  state.example=false;
   save(); buildRows(); renderOutputs(); updateBanner();
-  const tr=$("frame-body").querySelector(`tr[data-id="${nf.id}"]`);
-  if(tr){ tr.scrollIntoView({block:"nearest"}); tr.classList.remove("flash"); void tr.offsetWidth; tr.classList.add("flash"); }
-  let note=`Bester Treffer: ${nf.name} (${s.stack}/${s.reach}) — Abweichung ΔStack ${signed(c.dStack)} / ΔReach ${signed(c.dReach)} mm`;
-  if(state.budgetEnabled) note+=` · ${ {good:"passend",warn:"grenzwertig",crit:"schwierig"}[c.status] }`;
+  added.forEach((nf,i)=>{
+    const tr=$("frame-body").querySelector(`tr[data-id="${nf.id}"]`);
+    if(tr){ if(i===0) tr.scrollIntoView({block:"nearest"}); tr.classList.remove("flash"); void tr.offsetWidth; tr.classList.add("flash"); }
+  });
+  const best=top[0];
+  let note=`5 beste Treffer eingetragen — Nr. 1: ${best.b.brand} ${best.b.model} ${best.s.size} (ΔStack ${signed(best.c.dStack)} / ΔReach ${signed(best.c.dReach)} mm)`;
+  if(state.budgetEnabled) note+=` · ${ {good:"passend",warn:"grenzwertig",crit:"schwierig"}[best.c.status] }`;
   $("db-hint").textContent=note;
 });
 let downloadsNS=null;
