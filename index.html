@@ -749,12 +749,12 @@ armConfirm($("btn-reset"),"Beispiele wirklich laden?",()=>{
 
 /* ---------- best fit: scan the whole database for the closest bike/size ---------- */
 function findBestFit(){
-  const budget=!!state.budgetEnabled;
+  // best fit = frame whose NATIVE geometry sits closest to the target (least cockpit adjustment needed),
+  // measured as the raw distance sqrt(dStack^2 + dReach^2). Spacer/stem stay a fine-tuning detail, not the ranking.
   let best=null,bestScore=Infinity;
   BIKE_DB.forEach(b=>b.sizes.forEach(s=>{
     const c=compensate({stack:s.stack,reach:s.reach});
-    const score=budget?Math.hypot(c.resStack,c.resReach):c.dist;
-    if(score<bestScore){bestScore=score;best={b,s,c};}
+    if(c.dist<bestScore){bestScore=c.dist;best={b,s,c};}
   }));
   return best;
 }
@@ -766,13 +766,8 @@ $("btn-bestfit").addEventListener("click",()=>{
   save(); buildRows(); renderOutputs(); updateBanner();
   const tr=$("frame-body").querySelector(`tr[data-id="${nf.id}"]`);
   if(tr){ tr.scrollIntoView({block:"nearest"}); tr.classList.remove("flash"); void tr.offsetWidth; tr.classList.add("flash"); }
-  let note;
-  if(state.budgetEnabled){
-    const ri=restItems(c), lab={good:"passend",warn:"grenzwertig",crit:"schwierig"}[c.status];
-    note=`Bester Treffer: ${nf.name} — ${lab}${ri.length?" ("+ri.join(" / ")+")":", exakt getroffen"}`;
-  } else {
-    note=`Bester Treffer: ${nf.name} — ${fmt(c.dist)} mm Abstand zum Ziel`;
-  }
+  let note=`Bester Treffer: ${nf.name} (${s.stack}/${s.reach}) — Abweichung ΔStack ${signed(c.dStack)} / ΔReach ${signed(c.dReach)} mm`;
+  if(state.budgetEnabled) note+=` · ${ {good:"passend",warn:"grenzwertig",crit:"schwierig"}[c.status] }`;
   $("db-hint").textContent=note;
 });
 let downloadsNS=null;
