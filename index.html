@@ -345,7 +345,7 @@ function defaults(){
   return {
     example:true,
     target:{stack:570,reach:386},
-    tol:{reach:15,stack:25},
+    tol:{reach:5,stack:8},
     budget:{spacerMax:40,stemMin:70,stemMax:120},
     budgetEnabled:true,
     showVectors:false,
@@ -462,8 +462,8 @@ function compensate(f){
   const resReach=t.reach-compReach;
   // verdict uses the ROUNDED (displayed) residual so it matches the text; empty tolerance falls back to default
   const aS=Math.abs(Math.round(resStack)), aR=Math.abs(Math.round(resReach));
-  const tS=(state.tol.stack===""||state.tol.stack==null)?25:num(state.tol.stack);
-  const tR=(state.tol.reach===""||state.tol.reach==null)?15:num(state.tol.reach);
+  const tS=(state.tol.stack===""||state.tol.stack==null)?8:num(state.tol.stack);
+  const tR=(state.tol.reach===""||state.tol.reach==null)?5:num(state.tol.reach);
   let status;
   if(aS<=tS && aR<=tR) status="good";
   else if(aS>2*tS || aR>2*tR) status="crit";
