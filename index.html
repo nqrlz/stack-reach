@@ -601,7 +601,7 @@ normalizeSeq();
 
 /* ---------- compensation model ---------- */
 function compensate(f){
-  const t=currentTarget(),b=state.budget;
+  const t=state.target,b=state.budget;
   const dStack=t.stack-num(f.stack);   // + => need to raise
   const dReach=t.reach-num(f.reach);   // + => need to lengthen
   const str=num(f.stack)/num(f.reach);
@@ -668,14 +668,16 @@ function deriveFrameTarget(){
     stack:Math.round(stackCtr-L*Math.sin(alpha)-a*Math.sin(hta))
   };
 }
-// the frame Stack/Reach used for all evaluation: derived from the cockpit in Cockpit mode,
-// the manually entered value in Rahmen mode. state.target always keeps the MANUAL value,
-// so switching modes never overwrites the Rahmen entry.
-function currentTarget(){
-  return state.mode==="cockpit" ? deriveFrameTarget() : state.target;
-}
-function applyCockpit(){
+// There is ONE shared fit target (state.target). Cockpit mode is just another way to
+// ENTER it: editing a cockpit field recomputes and writes state.target (applyCockpit).
+// Merely toggling modes never recomputes and never clears anything.
+function previewCockpit(){   // update the "→ Rahmen-Ziel" readout only, without touching the target
   const t=deriveFrameTarget();
+  $("cockpit-out").textContent=`Stack ${t.stack} / Reach ${t.reach} mm`;
+}
+function applyCockpit(){      // a cockpit edit updates the shared target and the readout
+  const t=deriveFrameTarget();
+  state.target.stack=t.stack; state.target.reach=t.reach;
   $("cockpit-out").textContent=`Stack ${t.stack} / Reach ${t.reach} mm`;
 }
 function applyModeUI(){
@@ -684,8 +686,9 @@ function applyModeUI(){
   $("mode-cockpit").classList.toggle("active",cockpit);
   $("frame-target").hidden=cockpit;
   $("cockpit-target").hidden=!cockpit;
-  if(cockpit) applyCockpit();
-  else { $("t-stack").value=state.target.stack; $("t-reach").value=state.target.reach; }  // restore manual Rahmen values
+  // toggling only shows/hides fields; the crosshair (state.target) stays put in both directions
+  if(cockpit) previewCockpit();
+  else { $("t-stack").value=state.target.stack; $("t-reach").value=state.target.reach; }  // carry the shared value into the Rahmen fields
 }
 function bindCockpit(){
   COCKPIT_FIELDS.forEach(([el,k])=>{
@@ -821,7 +824,7 @@ function drawPlot(comp){
   // Reach (X, forward) vs Stack (Y, up). Focused on the target crosshair and the frame endpoints.
   const W=680,H=470,m={t:28,r:110,b:44,l:52};
   const iw=W-m.l-m.r, ih=H-m.t-m.b;
-  const t=currentTarget();
+  const t=state.target;
   const colorFor=s=>({good:"var(--good)",warn:"var(--warn)",crit:"var(--crit)"}[s]);
   const budget=!!state.budgetEnabled;               // budget/tolerance active?
   const showVec=budget && !!state.showVectors;
