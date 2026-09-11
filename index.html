@@ -88,6 +88,12 @@
   .panel-toggle{display:inline-flex;align-items:center;gap:5px;cursor:pointer;letter-spacing:.06em;
     font-size:11px;color:var(--muted);text-transform:uppercase}
   .panel-toggle input{accent-color:var(--accent);cursor:pointer;width:14px;height:14px}
+  .mode-toggle{display:inline-flex;border:1px solid var(--line-strong);border-radius:7px;overflow:hidden}
+  .mode-btn{border:0;border-radius:0;background:transparent;color:var(--muted);padding:5px 11px;
+    font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:12.5px;letter-spacing:.03em;
+    text-transform:uppercase;cursor:pointer}
+  .mode-btn+.mode-btn{border-left:1px solid var(--line-strong)}
+  .mode-btn.active{background:var(--accent);color:#fff}
   /* greyed-out (deactivated) budget box: dim + lock the fields, keep the toggle live */
   #budget-panel.off .budget-body{opacity:.4;pointer-events:none;filter:grayscale(1)}
   /* hide the cockpit-correction column when the budget is off */
@@ -263,14 +269,41 @@
   <div class="layout">
     <aside>
       <div class="panel target-panel">
-        <p class="eyebrow"><span class="n">✛&#xFE0E;</span> Ziel-Geometrie</p>
-        <div class="grid2">
-          <div class="field"><label for="t-stack">Ziel-Stack</label>
-            <div class="in"><input type="number" id="t-stack" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
-          <div class="field"><label for="t-reach">Ziel-Reach</label>
-            <div class="in"><input type="number" id="t-reach" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
+        <p class="eyebrow eyebrow-row"><span><span class="n">✛&#xFE0E;</span> Ziel-Geometrie</span>
+          <span class="mode-toggle">
+            <button type="button" id="mode-frame" class="mode-btn active">Rahmen</button>
+            <button type="button" id="mode-cockpit" class="mode-btn">Cockpit</button>
+          </span></p>
+        <div id="frame-target">
+          <div class="grid2">
+            <div class="field"><label for="t-stack">Ziel-Stack</label>
+              <div class="in"><input type="number" id="t-stack" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="t-reach">Ziel-Reach</label>
+              <div class="in"><input type="number" id="t-reach" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
+          </div>
+          <p class="row-hint">Der Rahmen-Zielwert vom Fitter. Das Fadenkreuz im Diagramm.</p>
         </div>
-        <p class="row-hint">Der Rahmen-Zielwert vom Fitter. Das Fadenkreuz im Diagramm.</p>
+        <div id="cockpit-target" hidden>
+          <div class="grid2">
+            <div class="field"><label for="c-reach">Reach → Lenkermitte</label>
+              <div class="in"><input type="number" id="c-reach" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="c-stack">Stack → Lenker-Oberfl.</label>
+              <div class="in"><input type="number" id="c-stack" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="c-stem">Vorbaulänge</label>
+              <div class="in"><input type="number" id="c-stem" step="10" inputmode="numeric"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="c-angle">Vorbauwinkel</label>
+              <div class="in"><input type="number" id="c-angle" step="1" inputmode="numeric"><span class="unit">°</span></div></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label for="c-spacer">Spacer-Höhe</label>
+              <div class="in"><input type="number" id="c-spacer" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
+            <div class="field"><label for="c-hta">Lenkwinkel</label>
+              <div class="in"><input type="number" id="c-hta" step="0.5" inputmode="decimal"><span class="unit">°</span></div></div>
+          </div>
+          <p class="row-hint">→ Rahmen-Ziel: <b id="cockpit-out">Stack – / Reach –</b><br>Steuersatz ~10 mm, halber Lenker ~15 mm pauschal angesetzt.</p>
+        </div>
       </div>
 
       <div class="panel" id="budget-panel">
@@ -380,7 +413,9 @@ const signed=v=>{const r=Math.round(v);return (r>0?"+":"")+r;};
 function defaults(){
   return {
     example:true,
+    mode:"frame",
     target:{stack:570,reach:386},
+    cockpit:{reachBar:500,stackBarTop:630,stem:100,angle:-6,spacer:20,hta:72},
     tol:{reach:5,stack:8},
     budget:{spacerMax:40,stemMin:70,stemMax:120},
     budgetEnabled:true,
@@ -544,6 +579,47 @@ function bindTop(){
       save(); renderOutputs();
     });
   });
+}
+
+/* ---------- target mode: Rahmen (default) / Cockpit ---------- */
+const COCKPIT_FIELDS=[["c-reach","reachBar"],["c-stack","stackBarTop"],["c-stem","stem"],["c-angle","angle"],["c-spacer","spacer"],["c-hta","hta"]];
+// derive the frame Stack/Reach that, with the given cockpit setup, lands the bar at the target position
+function deriveFrameTarget(){
+  const c=state.cockpit;
+  const hta=(num(c.hta)||72)*Math.PI/180;
+  const alpha=(Math.PI/2-hta)+(num(c.angle)||0)*Math.PI/180;  // stem angle above horizontal
+  const L=num(c.stem), a=num(c.spacer)+10;                    // spacers + ~10 mm headset cap along the steerer
+  const stackCtr=num(c.stackBarTop)-15;                       // bar top surface -> clamp centre (~15 mm)
+  return {
+    reach:Math.round(num(c.reachBar)-L*Math.cos(alpha)+a*Math.cos(hta)),
+    stack:Math.round(stackCtr-L*Math.sin(alpha)-a*Math.sin(hta))
+  };
+}
+function applyCockpit(){
+  const t=deriveFrameTarget();
+  state.target.stack=t.stack; state.target.reach=t.reach;
+  $("t-stack").value=t.stack; $("t-reach").value=t.reach;
+  $("cockpit-out").textContent=`Stack ${t.stack} / Reach ${t.reach} mm`;
+}
+function applyModeUI(){
+  const cockpit=state.mode==="cockpit";
+  $("mode-frame").classList.toggle("active",!cockpit);
+  $("mode-cockpit").classList.toggle("active",cockpit);
+  $("frame-target").hidden=cockpit;
+  $("cockpit-target").hidden=!cockpit;
+  if(cockpit) applyCockpit();
+}
+function bindCockpit(){
+  COCKPIT_FIELDS.forEach(([el,k])=>{
+    const inp=$(el); inp.value=state.cockpit[k];
+    inp.addEventListener("input",()=>{
+      const v=inp.value; state.cockpit[k]=(v===""?"":num(v));
+      if(state.mode==="cockpit") applyCockpit();
+      save(); renderOutputs();
+    });
+  });
+  $("mode-frame").addEventListener("click",()=>{ state.mode="frame"; save(); applyModeUI(); renderOutputs(); });
+  $("mode-cockpit").addEventListener("click",()=>{ state.mode="cockpit"; save(); applyModeUI(); renderOutputs(); });
 }
 
 function buildRows(){
@@ -874,6 +950,7 @@ function syncInputs(){
   $("t-stack").value=state.target.stack; $("t-reach").value=state.target.reach;
   $("tol-reach").value=state.tol.reach; $("tol-stack").value=state.tol.stack;
   $("sp-max").value=state.budget.spacerMax; $("st-min").value=state.budget.stemMin; $("st-max").value=state.budget.stemMax;
+  COCKPIT_FIELDS.forEach(([el,k])=>{ $(el).value=state.cockpit[k]; });
 }
 function updateBanner(){ $("example-banner").hidden=!state.example; }
 
@@ -963,6 +1040,8 @@ $("btn-db-add").addEventListener("click",()=>{
 
 /* ---------- init ---------- */
 bindTop();
+bindCockpit();
+applyModeUI();
 populateBikeDB();
 buildRows();
 applyBudgetUI();
