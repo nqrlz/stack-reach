@@ -172,7 +172,16 @@
   .del-btn{color:var(--faint);border-color:transparent;background:transparent;font-size:16px;padding:2px 7px}
   .del-btn:hover{color:var(--crit);border-color:var(--crit)}
 
-  .addrow{margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .db-picker{margin-top:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+    padding:10px 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px}
+  .db-picker .db-label{font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.05em;
+    font-size:12.5px;color:var(--muted);font-weight:600}
+  .db-picker select{font-family:"IBM Plex Sans",sans-serif;font-size:13px;color:var(--ink);
+    background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:6px 8px;cursor:pointer}
+  .db-picker select#db-bike{min-width:190px}
+  .db-picker .db-hint{font-size:11px;color:var(--faint);margin-left:auto}
+  @media (max-width:520px){.db-picker .db-hint{margin-left:0;width:100%}}
+  .addrow{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
   .note{font-size:12px;color:var(--faint);margin-top:14px;line-height:1.45}
   .note b{color:var(--muted);font-weight:600}
 
@@ -285,8 +294,16 @@
             <tbody id="frame-body"></tbody>
           </table>
         </div>
+        <div class="db-picker">
+          <span class="db-label">◎ Aus Datenbank</span>
+          <select id="db-bike" aria-label="Rad wählen"></select>
+          <select id="db-size" aria-label="Größe wählen"></select>
+          <button class="primary" id="btn-db-add">+ übernehmen</button>
+          <span class="db-hint">Größe · Stack/Reach in mm · Geometrie laut Hersteller</span>
+        </div>
+
         <div class="addrow">
-          <button class="primary" id="btn-add">+ Rahmen hinzufügen</button>
+          <button class="ghost" id="btn-add">+ Leerer Rahmen</button>
           <button class="ghost" id="btn-sort" title="Rahmen nach Passform ordnen (beste zuerst)">↕ Nach Passform sortieren</button>
           <button class="ghost" id="btn-reset" title="Beispiel-Datensatz wiederherstellen">Beispiele laden</button>
         </div>
@@ -334,6 +351,64 @@ function defaults(){
   };
 }
 function id(){return "f"+Math.random().toString(36).slice(2,9);}
+
+/* ---------- bike geometry database (manufacturer stack/reach per size, mm) ----------
+   Sources: manufacturer geometry sheets, cross-checked against geometrygeeks / TrainCraft.
+   Size labels follow the maker's convention where known (letters or cm/numeric). */
+const BIKE_DB=[
+  {brand:"3T", model:"Racemax 2 Italia", year:2026, sizes:[
+    {size:"S",stack:544,reach:364},{size:"M",stack:566,reach:374},{size:"L",stack:589,reach:385},{size:"XL",stack:609,reach:393}]},
+  {brand:"Allied", model:"Able", year:2025, sizes:[
+    {size:"52",stack:540,reach:390},{size:"54",stack:555,reach:395},{size:"56",stack:575,reach:400},{size:"58",stack:595,reach:410},{size:"61",stack:615,reach:415}]},
+  {brand:"Basso", model:"Palta III", year:2026, sizes:[
+    {size:"XS",stack:530,reach:354},{size:"S",stack:550,reach:362},{size:"M",stack:570,reach:373},{size:"L",stack:590,reach:385},{size:"XL",stack:605,reach:398},{size:"XXL",stack:620,reach:405}]},
+  {brand:"Bianchi", model:"Impulso RC", year:2024, sizes:[
+    {size:"XS",stack:517,reach:376},{size:"S",stack:534,reach:378},{size:"M",stack:554,reach:391},{size:"L",stack:580,reach:401},{size:"XL",stack:608,reach:414}]},
+  {brand:"BMC", model:"Kaius 01", year:2023, sizes:[
+    {size:"47",stack:510,reach:390},{size:"51",stack:530,reach:397},{size:"54",stack:550,reach:401},{size:"56",stack:570,reach:405},{size:"58",stack:595,reach:410},{size:"61",stack:620,reach:414}]},
+  {brand:"Canyon", model:"Grail CF", year:2026, sizes:[
+    {size:"2XS",stack:545,reach:372},{size:"XS",stack:556,reach:385},{size:"S",stack:573,reach:394},{size:"M",stack:591,reach:411},{size:"L",stack:613,reach:427},{size:"XL",stack:633,reach:435},{size:"2XL",stack:655,reach:454}]},
+  {brand:"Cannondale", model:"SuperX", year:2025, sizes:[
+    {size:"46",stack:515,reach:365},{size:"51",stack:535,reach:371},{size:"54",stack:555,reach:378},{size:"56",stack:575,reach:385},{size:"58",stack:595,reach:392},{size:"61",stack:615,reach:398}]},
+  {brand:"Cannondale", model:"Topstone Carbon", year:2025, sizes:[
+    {size:"XS",stack:554,reach:364},{size:"S",stack:564,reach:373},{size:"M",stack:579,reach:378},{size:"L",stack:597,reach:383},{size:"XL",stack:615,reach:389},{size:"2XL",stack:646,reach:397}]},
+  {brand:"Cervélo", model:"Aspero", year:2024, sizes:[
+    {size:"48",stack:505,reach:370},{size:"51",stack:530,reach:379},{size:"54",stack:555,reach:388},{size:"56",stack:580,reach:397},{size:"58",stack:605,reach:406},{size:"61",stack:630,reach:415}]},
+  {brand:"Cube", model:"Nuroad C:62", year:2025, sizes:[
+    {size:"XS",stack:520,reach:388},{size:"S",stack:544,reach:388},{size:"M",stack:579,reach:393},{size:"L",stack:599,reach:392},{size:"XL",stack:623,reach:402}]},
+  {brand:"ENVE", model:"MOG", year:2025, sizes:[
+    {size:"47",stack:520,reach:367},{size:"51",stack:543,reach:378},{size:"54",stack:565,reach:389},{size:"56",stack:587,reach:397},{size:"58",stack:605,reach:405},{size:"60",stack:630,reach:415}]},
+  {brand:"Factor", model:"Ostro Gravel", year:2023, sizes:[
+    {size:"49",stack:515,reach:377},{size:"52",stack:535,reach:385},{size:"54",stack:555,reach:394},{size:"56",stack:580,reach:402},{size:"58",stack:605,reach:412},{size:"61",stack:625,reach:422}]},
+  {brand:"Fara", model:"F/Gravel", year:2024, sizes:[
+    {size:"49",stack:550,reach:377},{size:"52",stack:570,reach:386},{size:"56",stack:590,reach:396},{size:"59",stack:610,reach:407}]},
+  {brand:"Felt", model:"Breed", year:2026, sizes:[
+    {size:"49",stack:522,reach:365},{size:"52",stack:537,reach:370},{size:"54",stack:558,reach:380},{size:"56",stack:576,reach:390},{size:"58",stack:600,reach:395},{size:"61",stack:631,reach:405}]},
+  {brand:"Giant", model:"Revolt Advanced", year:2024, sizes:[
+    {size:"XS",stack:556,reach:381},{size:"S",stack:570,reach:381},{size:"M",stack:586,reach:387},{size:"ML",stack:602,reach:391},{size:"L",stack:616,reach:397},{size:"XL",stack:630,reach:407}]},
+  {brand:"Megamo", model:"Silk", year:2026, sizes:[
+    {size:"XS",stack:516,reach:372},{size:"S",stack:535,reach:382},{size:"M",stack:557,reach:395},{size:"L",stack:581,reach:408},{size:"XL",stack:605,reach:416}]},
+  {brand:"Merida", model:"Silex", year:2026, sizes:[
+    {size:"XXS",stack:549,reach:378},{size:"XS",stack:570,reach:392},{size:"S",stack:588,reach:402},{size:"M",stack:607,reach:412},{size:"L",stack:626,reach:426},{size:"XL",stack:645,reach:441}]},
+  {brand:"Orbea", model:"Terra", year:2024, sizes:[
+    {size:"XS",stack:526,reach:375},{size:"S",stack:548,reach:382},{size:"M",stack:570,reach:389},{size:"L",stack:592,reach:395},{size:"XL",stack:614,reach:402},{size:"2XL",stack:636,reach:409}]},
+  {brand:"Parlee", model:"Taos", year:2024, sizes:[
+    {size:"1",stack:540,reach:362},{size:"2",stack:564,reach:375},{size:"3",stack:585,reach:386},{size:"4",stack:605,reach:402},{size:"5",stack:620,reach:417},{size:"6",stack:640,reach:429}]},
+  {brand:"Pinarello", model:"Grevil F", year:2022, sizes:[
+    {size:"S",stack:564,reach:368},{size:"M",stack:578,reach:374},{size:"L",stack:594,reach:382},{size:"XL",stack:609,reach:390},{size:"XXL",stack:629,reach:398}]},
+  {brand:"Ridley", model:"Kanzo Fast", year:2023, sizes:[
+    {size:"XS",stack:537,reach:372},{size:"S",stack:563,reach:380},{size:"M",stack:587,reach:385},{size:"L",stack:613,reach:393},{size:"XL",stack:638,reach:400}]},
+  {brand:"Rose", model:"Backroad", year:2025, sizes:[
+    {size:"XS",stack:545,reach:384},{size:"S",stack:565,reach:388},{size:"M",stack:581,reach:396},{size:"L",stack:600,reach:403},{size:"XL",stack:610,reach:412},{size:"XXL",stack:624,reach:430}]},
+  {brand:"Scott", model:"Addict Gravel", year:2025, sizes:[
+    {size:"XS",stack:519,reach:374},{size:"S",stack:544,reach:378},{size:"M",stack:565,reach:387},{size:"L",stack:590,reach:398},{size:"XL",stack:610,reach:406}]},
+  {brand:"Specialized", model:"Crux", year:2025, sizes:[
+    {size:"49",stack:530,reach:375},{size:"52",stack:547,reach:382},{size:"54",stack:560,reach:388},{size:"56",stack:578,reach:397},{size:"58",stack:598,reach:405},{size:"61",stack:621,reach:415}]},
+  {brand:"Time", model:"ADHX 45", year:2024, sizes:[
+    {size:"XS",stack:530,reach:366},{size:"S",stack:543,reach:373},{size:"M",stack:562,reach:383},{size:"L",stack:581,reach:392},{size:"XL",stack:601,reach:397}]},
+  {brand:"Wilier", model:"Rave SLR (ID2)", year:2026, sizes:[
+    {size:"XS",stack:532,reach:375},{size:"S",stack:546,reach:381},{size:"M",stack:561,reach:387},{size:"L",stack:579,reach:393},{size:"XL",stack:597,reach:400},{size:"XXL",stack:617,reach:408}]}
+].filter(b=>b.sizes.length);
 
 let state=load();
 function load(){
@@ -746,8 +821,41 @@ $("chk-budget").addEventListener("change",()=>{
   });
 });
 
+/* ---------- bike database picker ---------- */
+function populateBikeDB(){
+  const sel=$("db-bike"); sel.innerHTML="";
+  BIKE_DB.map((b,i)=>({b,i}))
+    .sort((x,y)=>(x.b.brand+" "+x.b.model).localeCompare(y.b.brand+" "+y.b.model))
+    .forEach(({b,i})=>{
+      const o=document.createElement("option");
+      o.value=i; o.textContent=`${b.brand} ${b.model} (${b.year})`;
+      sel.appendChild(o);
+    });
+  populateSizes();
+}
+function populateSizes(){
+  const b=BIKE_DB[+$("db-bike").value], sel=$("db-size"); sel.innerHTML="";
+  if(!b) return;
+  b.sizes.forEach((s,i)=>{
+    const o=document.createElement("option");
+    o.value=i; o.textContent=`${s.size} · ${s.stack}/${s.reach}`;
+    sel.appendChild(o);
+  });
+}
+$("db-bike").addEventListener("change",populateSizes);
+$("btn-db-add").addEventListener("click",()=>{
+  const b=BIKE_DB[+$("db-bike").value]; if(!b) return;
+  const s=b.sizes[+$("db-size").value]; if(!s) return;
+  const nf={id:id(),seq:nextSeq(),name:`${b.brand} ${b.model} ${s.size}`,stack:s.stack,reach:s.reach};
+  state.frames.push(nf); state.example=false;
+  save(); buildRows(); renderOutputs(); updateBanner();
+  const tr=$("frame-body").querySelector(`tr[data-id="${nf.id}"]`);
+  if(tr) tr.scrollIntoView({block:"nearest"});
+});
+
 /* ---------- init ---------- */
 bindTop();
+populateBikeDB();
 buildRows();
 applyBudgetUI();
 renderOutputs();
