@@ -173,6 +173,8 @@
   td.rec b{color:var(--ink);font-family:"IBM Plex Mono",monospace;font-weight:600}
   td.rec .rc-k{display:inline-block;min-width:52px;color:var(--muted);font-family:"Barlow Condensed",sans-serif;
     text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+  td.rec .rc-vals{display:inline-block;vertical-align:top}
+  td.rec .rc-vals b{display:block}
   .del-btn{color:var(--faint);border-color:transparent;background:transparent;font-size:16px;padding:2px 7px}
   .del-btn:hover{color:var(--crit);border-color:var(--crit)}
 
@@ -609,14 +611,15 @@ function restItems(c){
   return items;
 }
 function recText(c){
-  // three labelled lines: Spacer, Vorbau, and the remaining deviation with its direction
+  // three labelled lines: Spacer, Vorbau, and the remaining deviation with its direction;
+  // if both height and length are off, each goes on its own line (aligned under one another)
   const rest=[];
   if(Math.round(c.resReach)!==0) rest.push(`${Math.abs(Math.round(c.resReach))} mm ${c.resReach>0?"zu kurz":"zu lang"}`);
   if(Math.round(c.resStack)!==0) rest.push(`${Math.abs(Math.round(c.resStack))} mm ${c.resStack>0?"zu niedrig":"zu hoch"}`);
-  const restStr=rest.length?rest.join("; "):"exakt getroffen";
+  const restVals=rest.length?rest.map(r=>`<b>${r}</b>`).join(""):`<b>exakt getroffen</b>`;
   return `<span class="rc-k">Spacer:</span> ${fmt(c.spacer)} mm`
        +`<br><span class="rc-k">Vorbau:</span> ${fmt(c.stem)} mm`
-       +`<br><span class="rc-k">Rest:</span> <b>${restStr}</b>`;
+       +`<br><span class="rc-k">Rest:</span><span class="rc-vals">${restVals}</span>`;
 }
 function escapeAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
 
