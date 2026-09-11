@@ -182,6 +182,10 @@
   .db-picker .db-hint{font-size:11px;color:var(--faint);margin-left:auto}
   @media (max-width:520px){.db-picker .db-hint{margin-left:0;width:100%}}
   .addrow{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  #btn-clear:hover{border-color:var(--crit);color:var(--crit)}
+  @keyframes rowflash{0%{background:var(--accent-soft)}100%{background:transparent}}
+  tr.flash{animation:rowflash 1.3s ease-out}
+  @media (prefers-reduced-motion:reduce){tr.flash{animation:none}}
   .note{font-size:12px;color:var(--faint);margin-top:14px;line-height:1.45}
   .note b{color:var(--muted);font-weight:600}
 
@@ -299,12 +303,14 @@
           <select id="db-bike" aria-label="Rad wählen"></select>
           <select id="db-size" aria-label="Größe wählen"></select>
           <button class="primary" id="btn-db-add">+ übernehmen</button>
-          <span class="db-hint">Größe · Stack/Reach in mm · Geometrie laut Hersteller</span>
+          <button class="ghost" id="btn-bestfit" title="Das am besten passende Rad aus der Datenbank finden und eintragen">★ Best Fit aus DB</button>
+          <span class="db-hint" id="db-hint">Größe · Stack/Reach in mm · Geometrie laut Hersteller</span>
         </div>
 
         <div class="addrow">
           <button class="ghost" id="btn-add">+ Leerer Rahmen</button>
           <button class="ghost" id="btn-sort" title="Rahmen nach Passform ordnen (beste zuerst)">↕ Nach Passform sortieren</button>
+          <button class="ghost" id="btn-clear" title="Alle Rahmen aus der Vergleichstabelle löschen">Tabelle leeren</button>
           <button class="ghost" id="btn-reset" title="Beispiel-Datensatz wiederherstellen">Beispiele laden</button>
         </div>
 
@@ -725,6 +731,41 @@ $("btn-reset").addEventListener("click",()=>{
   if(!confirm("Beispiel-Datensatz laden? Deine aktuellen Rahmen werden ersetzt.")) return;
   const d=defaults(); state.frames=d.frames; state.target=d.target;
   save(); syncInputs(); buildRows(); renderOutputs();
+});
+$("btn-clear").addEventListener("click",()=>{
+  if(!state.frames.length) return;
+  if(!confirm("Alle Rahmen aus der Vergleichstabelle löschen?")) return;
+  state.frames=[]; state.example=false;
+  save(); buildRows(); renderOutputs(); updateBanner();
+});
+
+/* ---------- best fit: scan the whole database for the closest bike/size ---------- */
+function findBestFit(){
+  const budget=!!state.budgetEnabled;
+  let best=null,bestScore=Infinity;
+  BIKE_DB.forEach(b=>b.sizes.forEach(s=>{
+    const c=compensate({stack:s.stack,reach:s.reach});
+    const score=budget?Math.hypot(c.resStack,c.resReach):c.dist;
+    if(score<bestScore){bestScore=score;best={b,s,c};}
+  }));
+  return best;
+}
+$("btn-bestfit").addEventListener("click",()=>{
+  const best=findBestFit(); if(!best) return;
+  const {b,s,c}=best;
+  const nf={id:id(),seq:nextSeq(),name:`${b.brand} ${b.model} ${s.size}`,stack:s.stack,reach:s.reach};
+  state.frames.push(nf); state.example=false;
+  save(); buildRows(); renderOutputs(); updateBanner();
+  const tr=$("frame-body").querySelector(`tr[data-id="${nf.id}"]`);
+  if(tr){ tr.scrollIntoView({block:"nearest"}); tr.classList.remove("flash"); void tr.offsetWidth; tr.classList.add("flash"); }
+  let note;
+  if(state.budgetEnabled){
+    const ri=restItems(c), lab={good:"passend",warn:"grenzwertig",crit:"schwierig"}[c.status];
+    note=`Bester Treffer: ${nf.name} — ${lab}${ri.length?" ("+ri.join(" / ")+")":", exakt getroffen"}`;
+  } else {
+    note=`Bester Treffer: ${nf.name} — ${fmt(c.dist)} mm Abstand zum Ziel`;
+  }
+  $("db-hint").textContent=note;
 });
 let downloadsNS=null;
 $("btn-export").disabled=true;
