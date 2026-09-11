@@ -73,8 +73,9 @@
   button.ghost{background:transparent}
   button.icon{padding:6px 9px;line-height:1}
 
-  .layout{display:grid;grid-template-columns:300px 1fr;gap:22px;align-items:start}
-  @media (max-width:860px){.layout{grid-template-columns:1fr}}
+  .layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:22px;align-items:start}
+  @media (max-width:860px){.layout{grid-template-columns:minmax(0,1fr)}}
+  aside,main{min-width:0}   /* let columns shrink; the wide table scrolls inside .scroll instead of stretching the page */
 
   /* panels */
   .panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
