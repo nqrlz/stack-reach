@@ -97,6 +97,20 @@
   .mode-btn.active{background:var(--accent);color:#fff}
   /* greyed-out (deactivated) budget box: dim + lock the fields, keep the toggle live */
   #budget-panel.off .budget-body{opacity:.4;pointer-events:none;filter:grayscale(1)}
+  #budget-panel .box-lead{font-size:12px;color:var(--muted);line-height:1.45;margin:0 0 10px}
+  #budget-panel .box-lead b{color:var(--ink);font-weight:600}
+  details.box-explain{margin:0 0 13px}
+  details.box-explain summary{cursor:pointer;font-family:"Barlow Condensed",sans-serif;text-transform:uppercase;
+    letter-spacing:.05em;font-size:11.5px;font-weight:600;color:var(--accent);list-style:none;
+    display:inline-flex;align-items:center;gap:5px}
+  details.box-explain summary::-webkit-details-marker{display:none}
+  details.box-explain summary::before{content:"+";font-size:14px;line-height:1}
+  details.box-explain[open] summary::before{content:"–"}
+  details.box-explain ul{margin:9px 0 0;padding-left:16px;font-size:12px;color:var(--muted);line-height:1.5}
+  details.box-explain li{margin-bottom:6px}
+  details.box-explain li:last-child{margin-bottom:0}
+  details.box-explain b{color:var(--ink);font-weight:600}
+  .ex-g{color:var(--good-tx);font-weight:600} .ex-w{color:var(--warn-tx);font-weight:600} .ex-c{color:var(--crit-tx);font-weight:600}
   /* hide the cockpit-correction column when the budget is off */
   table.no-budget .col-comp{display:none}
   .o-status .dist{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
@@ -333,6 +347,16 @@
       <div class="panel" id="budget-panel">
         <p class="eyebrow eyebrow-row"><span><span class="n">▤&#xFE0E;</span> Toleranz &amp; Budget</span>
           <label class="panel-toggle"><input type="checkbox" id="chk-budget"> aktiv</label></p>
+        <p class="box-lead">Simuliert, wie nah jeder Rahmen mit <b>Spacer + Vorbau</b> an dein Ziel kommt, und bewertet den Rest per Ampel. Rechnet auf <b>Rahmen-Ebene</b> — nicht am Lenker.</p>
+        <details class="box-explain">
+          <summary>Genauer erklärt</summary>
+          <ul>
+            <li><b>Budget</b> = wie viel Korrektur erlaubt ist. <b>Spacer-Spielraum</b> hebt den Stack (nur nach oben, bis zum Limit); <b>Vorbau&nbsp;min/max</b> stellt den Reach (länger = mehr, kürzer = weniger).</li>
+            <li><b>Toleranz</b> = wie viel „Rest" nach der Korrektur noch als Treffer zählt. Rest in beiden Toleranzen → <span class="ex-g">grün</span>; reißt eine um mehr als das Doppelte → <span class="ex-c">rot</span>; dazwischen → <span class="ex-w">gelb</span>.</li>
+            <li><b>Warum ohne Handposition?</b> Vorbau + Lenker sitzen bei jedem Rahmen gleich obendrauf und kürzen sich raus — wo deine Hände landen, steckt schon in deinem Ziel-Wert. Die Spacer-Zahl ist daher <em>relativ</em> zum Ziel, nicht der absolute Turm bis zum Lenker.</li>
+            <li><b>Ausgeschaltet</b> = keine Korrektur: roher Stack/Reach-Vergleich, Spalte „Abstand", nächster Rahmen ★&#xFE0E;.</li>
+          </ul>
+        </details>
         <div class="budget-body">
           <div class="grid2">
             <div class="field"><label for="tol-reach">Toleranz Reach</label>
