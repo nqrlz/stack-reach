@@ -128,6 +128,8 @@
   input::placeholder{color:var(--faint)}
   .field .unit{position:absolute;right:10px;font-size:11px;color:var(--faint);
     font-family:"Barlow Condensed",sans-serif;letter-spacing:.04em;pointer-events:none}
+  .field-sel{width:104px;flex:none;font-family:"IBM Plex Sans",sans-serif;font-size:13px;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:7px 8px;cursor:pointer}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .row-hint{font-size:12.5px;color:var(--faint);margin-top:8px;line-height:1.4}
 
@@ -376,6 +378,13 @@
             <div class="field"><label for="st-max" data-i18n="stMax">Stem max</label>
               <div class="in"><input type="number" id="st-max" step="10" min="70" max="150" inputmode="numeric"><span class="unit">mm</span></div></div>
           </div>
+          <div class="field"><label for="reach-weight" data-i18n="reachWeight">Reach weight</label>
+            <select id="reach-weight" class="field-sel">
+              <option value="0" data-i18n="rwOff">off</option>
+              <option value="0.05" data-i18n="rwLight">light</option>
+              <option value="0.1" data-i18n="rwMedium">medium</option>
+              <option value="0.2" data-i18n="rwStrong">strong</option>
+            </select></div>
           <p class="row-hint" data-i18n-html="budgetHint">How much cockpit correction is realistic. Sets the traffic light <em>after</em> compensation. Stem 70–150&nbsp;mm.</p>
         </div>
         <p class="row-hint budget-off-hint" hidden data-i18n-html="budgetOffHint">Off — spacers/stem virtually 0. Frames are compared raw by stack/reach; the "Distance" column shows <code>√(ΔStack²+ΔReach²)</code>, the nearest frame is highlighted ★&#xFE0E;.</p>
@@ -484,6 +493,7 @@ const I18N={
     explainHands:"<b>Why no hand position?</b> Stem + bar sit identically on top of every frame and cancel out — where your hands land is already baked into your target value. So the spacer number is <em>relative</em> to the target, not the absolute stack up to the bar.",
     explainOff:"<b>Off</b> = no correction: raw stack/reach comparison, “Distance” column, nearest frame ★︎.",
     tolReach:"Tolerance reach", tolStack:"Tolerance stack", spMax:"Spacer allowance (max)", stMin:"Stem min", stMax:"Stem max",
+    reachWeight:"Reach weight", rwOff:"off", rwLight:"light", rwMedium:"medium", rwStrong:"strong",
     budgetHint:"How much cockpit correction is realistic. Sets the traffic light <em>after</em> compensation. Stem 70–150&nbsp;mm.",
     budgetOffHint:"Off — spacers/stem virtually 0. Frames are compared raw by stack/reach; the “Distance” column shows <code>√(ΔStack²+ΔReach²)</code>, the nearest frame is highlighted ★︎.",
     legGood:"fits", legWarn:"borderline", legCrit:"tough", legTarget:"Target", legVectors:"Correction vectors",
@@ -533,6 +543,7 @@ const I18N={
     explainHands:"<b>Warum ohne Handposition?</b> Vorbau + Lenker sitzen bei jedem Rahmen gleich obendrauf und kürzen sich raus — wo deine Hände landen, steckt schon in deinem Ziel-Wert. Die Spacer-Zahl ist daher <em>relativ</em> zum Ziel, nicht der absolute Turm bis zum Lenker.",
     explainOff:"<b>Ausgeschaltet</b> = keine Korrektur: roher Stack/Reach-Vergleich, Spalte „Abstand\", nächster Rahmen ★︎.",
     tolReach:"Toleranz Reach", tolStack:"Toleranz Stack", spMax:"Spacer-Spielraum (max)", stMin:"Vorbau min", stMax:"Vorbau max",
+    reachWeight:"Reach-Gewicht", rwOff:"aus", rwLight:"leicht", rwMedium:"mittel", rwStrong:"stark",
     budgetHint:"Wie viel Korrektur per Cockpit realistisch ist. Bestimmt die Ampel <em>nach</em> Kompensation. Vorbau 70–150&nbsp;mm.",
     budgetOffHint:"Deaktiviert — Spacer/Vorbau virtuell auf 0. Die Rahmen werden roh per Stack/Reach verglichen; die Spalte „Abstand\" zeigt <code>√(ΔStack²+ΔReach²)</code>, der nächste Rahmen ist ★︎ hervorgehoben.",
     legGood:"passend", legWarn:"grenzwertig", legCrit:"schwierig", legTarget:"Ziel", legVectors:"Korrektur-Vektoren",
@@ -589,6 +600,7 @@ function encodeShare(st){
     b: [Number(st.budget.spacerMax), Number(st.budget.stemMin), Number(st.budget.stemMax)],
     be: st.budgetEnabled?1:0,
     sv: st.showVectors?1:0,
+    rw: Number(st.reachWeight),
     f: st.frames.map(f=>[String(f.name), Number(f.stack), Number(f.reach)])
   };
   return b64urlEncode(JSON.stringify(p));
@@ -605,6 +617,7 @@ function decodeShare(code){
   if(Array.isArray(p.b)) st.budget={spacerMax:num(p.b[0]),stemMin:num(p.b[1]),stemMax:num(p.b[2])};
   st.budgetEnabled = p.be?true:false;
   st.showVectors = p.sv?true:false;
+  if(p.rw!=null) st.reachWeight=num(p.rw);
   st.frames = p.f.map((row,i)=>({id:id(),seq:i,name:String(row[0]??t("modeFrame")),stack:num(row[1]),reach:num(row[2])}));
   return st;
 }
@@ -629,6 +642,7 @@ function defaults(){
     tol:{reach:5,stack:8},
     budget:{spacerMax:40,stemMin:70,stemMax:120},
     budgetEnabled:true,
+    reachWeight:0.05,
     showVectors:false,
     frames:[
       {id:id(),seq:0,name:"Beispiel Race 56",stack:550,reach:390},
@@ -779,6 +793,12 @@ function compensate(f){
   if(stem<stemMin) stem=Math.ceil(stemMin/10)*10;      // keep it inside the budget
   if(stem>stemMax) stem=Math.floor(stemMax/10)*10;
   const stemAdd=stem-stemRef;
+  // continuous (un-rounded) reach model for scoring — avoids 10 mm-stem jitter in fitCost:
+  // how far the stem MUST deviate from neutral, and how much reach even the budget-limit stem can't reach
+  const bandLo=stemRef-stemMin, bandHi=stemMax-stemRef;
+  const stemShift=Math.max(-bandLo,Math.min(bandHi,neededShift)); // stem deviation actually usable (continuous)
+  const reachEffort=Math.abs(stemShift);                          // "how extreme a stem is needed" (continuous)
+  const reachMiss=neededShift-stemShift;                          // reach the stem can't cover (0 within budget band)
   const compStack=num(f.stack)+stackRaise;
   const compReach=num(f.reach)-reachDrop+stemAdd;
   const resStack=t.stack-compStack;
@@ -791,7 +811,7 @@ function compensate(f){
   if(aS<=tS && aR<=tR) status="good";
   else if(aS>2*tS || aR>2*tR) status="crit";
   else status="warn";
-  return {dStack,dReach,str,dist,active:true,spacer,stem,stemAdd,compStack,compReach,resStack,resReach,status};
+  return {dStack,dReach,str,dist,active:true,spacer,stem,stemAdd,reachEffort,reachMiss,compStack,compReach,resStack,resReach,status};
 }
 
 /* ---------- rendering: inputs bound once, outputs re-rendered ---------- */
@@ -959,7 +979,9 @@ function escapeAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quo
 const SPACER_PENALTY=0.15;   // mm of "cost" added per mm of spacer used (tunable)
 function fitCost(c){
   if(!c.active) return c.dist;                                   // budget off -> raw closeness
-  return Math.hypot(c.resStack,c.resReach) + SPACER_PENALTY*Math.abs(c.spacer||0);
+  const rw=(state.reachWeight==null)?0.05:num(state.reachWeight);// user "reach weight" (stem-deviation penalty)
+  // uncorrectable residual (stack asymmetry + reach the stem can't reach) + spacer effort + stem-deviation effort
+  return Math.hypot(c.resStack, c.reachMiss||0) + SPACER_PENALTY*Math.abs(c.spacer||0) + rw*(c.reachEffort||0);
 }
 function fitCompare(ca,cb){
   const R=s=>({good:0,warn:1,crit:2}[s] ?? 0);
@@ -1229,6 +1251,7 @@ function syncInputs(){
   $("t-stack").value=state.target.stack; $("t-reach").value=state.target.reach;
   $("tol-reach").value=state.tol.reach; $("tol-stack").value=state.tol.stack;
   $("sp-max").value=state.budget.spacerMax; $("st-min").value=state.budget.stemMin; $("st-max").value=state.budget.stemMax;
+  $("reach-weight").value=String(state.reachWeight);
   COCKPIT_FIELDS.forEach(([el,k])=>{ $(el).value=state.cockpit[k]; });
 }
 function updateBanner(){ $("example-banner").hidden=!state.example; }
@@ -1263,6 +1286,7 @@ function applyBudgetUI(){
   $("th-status").textContent = on ? t("thStatusFit") : t("thStatusDist");
   $("btn-sort").textContent = on ? t("sortFit") : t("sortNear");
   $("chk-vectors").disabled=!on;
+  $("reach-weight").value=String(state.reachWeight);
   document.querySelectorAll(".leg-budget").forEach(el=>{el.hidden=!on;});
 }
 $("chk-budget").addEventListener("change",()=>{
@@ -1283,6 +1307,10 @@ $("chk-budget").addEventListener("change",()=>{
     state.budget[isMin?"stemMin":"stemMax"]=v;
     save(); renderOutputs();
   });
+});
+$("reach-weight").addEventListener("change",()=>{
+  state.reachWeight=num($("reach-weight").value);
+  save(); renderOutputs();
 });
 
 /* ---------- bike database picker ---------- */
