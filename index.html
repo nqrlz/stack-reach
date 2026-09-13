@@ -279,102 +279,106 @@
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <h1>Rahmen&#8203;-Fit</h1>
-      <span class="tag">Deine Fit-Zielwerte gegen Rahmen-Geometrien — mit Spacer- und Vorbau-Korrektur.</span>
+      <h1 data-i18n="appTitle">Frame Fit</h1>
+      <span class="tag" data-i18n="tagline">Your fit targets vs. frame geometries — with spacer and stem correction.</span>
     </div>
     <div class="top-actions">
-      <button class="ghost" id="btn-share" title="Diesen Vergleich als Link teilen">↗&#xFE0E; Teilen</button>
-      <button class="ghost" id="btn-export" title="Alle Daten als JSON sichern">Export</button>
-      <button class="ghost" id="btn-import" title="JSON laden">Import</button>
+      <span class="mode-toggle lang-toggle">
+        <button type="button" id="lang-en" class="mode-btn active">EN</button>
+        <button type="button" id="lang-de" class="mode-btn">DE</button>
+      </span>
+      <button class="ghost" id="btn-share" data-i18n="btnShare" data-i18n-title="btnShareTitle" title="Share this comparison as a link">↗&#xFE0E; Share</button>
+      <button class="ghost" id="btn-export" data-i18n-title="btnExportTitle" title="Save all data as JSON">Export</button>
+      <button class="ghost" id="btn-import" data-i18n-title="btnImportTitle" title="Load JSON">Import</button>
       <input type="file" id="file-import" accept="application/json,.json" hidden>
-      <button class="icon ghost" id="btn-theme" title="Hell/Dunkel umschalten" aria-label="Theme umschalten">◐&#xFE0E;</button>
+      <button class="icon ghost" id="btn-theme" data-i18n-title="btnThemeTitle" title="Toggle light/dark" data-i18n-aria="btnThemeAria" aria-label="Toggle theme">◐&#xFE0E;</button>
     </div>
   </header>
 
   <div class="share-bar" id="share-bar" hidden>
-    <strong>Link zum Vergleich</strong>
-    <input type="text" id="share-url" readonly aria-label="Vergleichs-Link" onfocus="this.select()">
-    <button class="btn primary" id="btn-share-copy">Kopieren</button>
-    <button class="ghost" id="btn-share-close" aria-label="Schließen">✕&#xFE0E;</button>
+    <strong data-i18n="shareBarTitle">Link to this comparison</strong>
+    <input type="text" id="share-url" readonly data-i18n-aria="shareUrlAria" aria-label="Comparison link" onfocus="this.select()">
+    <button class="btn primary" id="btn-share-copy" data-i18n="copy">Copy</button>
+    <button class="ghost" id="btn-share-close" data-i18n-aria="close" aria-label="Close">✕&#xFE0E;</button>
   </div>
 
   <div class="example-banner" id="example-banner" hidden>
-    <strong>Beispieldaten</strong>
-    <span>Ziel-Stack/Reach und die Rahmen sind Platzhalter — überschreib sie mit deinen echten Werten.</span>
-    <button class="ghost" id="btn-dismiss-banner">Verstanden</button>
+    <strong data-i18n="exampleTitle">Example data</strong>
+    <span data-i18n="exampleText">Target stack/reach and the frames are placeholders — replace them with your real numbers.</span>
+    <button class="ghost" id="btn-dismiss-banner" data-i18n="gotIt">Got it</button>
   </div>
 
   <div class="layout">
     <aside>
       <div class="panel target-panel">
-        <p class="eyebrow eyebrow-row"><span><span class="n">✛&#xFE0E;</span> Ziel-Geometrie</span>
+        <p class="eyebrow eyebrow-row"><span><span class="n">✛&#xFE0E;</span> <span data-i18n="targetGeo">Target geometry</span></span>
           <span class="mode-toggle">
-            <button type="button" id="mode-frame" class="mode-btn active">Rahmen</button>
-            <button type="button" id="mode-cockpit" class="mode-btn">Cockpit</button>
+            <button type="button" id="mode-frame" class="mode-btn active" data-i18n="modeFrame">Frame</button>
+            <button type="button" id="mode-cockpit" class="mode-btn" data-i18n="modeCockpit">Cockpit</button>
           </span></p>
         <div id="frame-target">
           <div class="grid2">
-            <div class="field"><label for="t-stack">Ziel-Stack</label>
+            <div class="field"><label for="t-stack" data-i18n="targetStack">Target stack</label>
               <div class="in"><input type="number" id="t-stack" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
-            <div class="field"><label for="t-reach">Ziel-Reach</label>
+            <div class="field"><label for="t-reach" data-i18n="targetReach">Target reach</label>
               <div class="in"><input type="number" id="t-reach" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
           </div>
-          <p class="row-hint">Der Rahmen-Zielwert vom Fitter. Das Fadenkreuz im Diagramm.</p>
+          <p class="row-hint" data-i18n="frameHint">The frame target from your fitter. The crosshair in the chart.</p>
         </div>
         <div id="cockpit-target" hidden>
           <div class="grid2">
-            <div class="field"><label for="c-reach">Reach → Lenkermitte</label>
+            <div class="field"><label for="c-reach" data-i18n="cReach">Reach → bar centre</label>
               <div class="in"><input type="number" id="c-reach" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
-            <div class="field"><label for="c-stack">Stack → Lenker-Oberfl.</label>
+            <div class="field"><label for="c-stack" data-i18n="cStack">Stack → bar top</label>
               <div class="in"><input type="number" id="c-stack" step="1" inputmode="numeric"><span class="unit">mm</span></div></div>
           </div>
           <div class="grid2">
-            <div class="field"><label for="c-stem">Vorbaulänge</label>
+            <div class="field"><label for="c-stem" data-i18n="cStem">Stem length</label>
               <div class="in"><input type="number" id="c-stem" step="10" inputmode="numeric"><span class="unit">mm</span></div></div>
-            <div class="field"><label for="c-angle">Vorbauwinkel</label>
+            <div class="field"><label for="c-angle" data-i18n="cAngle">Stem angle</label>
               <div class="in"><input type="number" id="c-angle" step="1" inputmode="numeric"><span class="unit">°</span></div></div>
           </div>
           <div class="grid2">
-            <div class="field"><label for="c-spacer">Spacer-Höhe</label>
+            <div class="field"><label for="c-spacer" data-i18n="cSpacer">Spacer height</label>
               <div class="in"><input type="number" id="c-spacer" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
-            <div class="field"><label for="c-hta">Lenkwinkel</label>
+            <div class="field"><label for="c-hta" data-i18n="cHta">Head angle</label>
               <div class="in"><input type="number" id="c-hta" step="0.5" inputmode="decimal"><span class="unit">°</span></div></div>
           </div>
-          <p class="row-hint">→ Rahmen-Ziel: <b id="cockpit-out">Stack – / Reach –</b><br>Steuersatz ~10 mm, halber Lenker ~15 mm pauschal angesetzt.</p>
+          <p class="row-hint"><span data-i18n="cockpitTargetPrefix">→ Frame target:</span> <b id="cockpit-out">Stack – / Reach –</b><br><span data-i18n="cockpitAssumption">Headset ~10 mm, half the bar ~15 mm assumed.</span></p>
         </div>
       </div>
 
       <div class="panel" id="budget-panel">
-        <p class="eyebrow eyebrow-row"><span><span class="n">▤&#xFE0E;</span> Toleranz &amp; Budget</span>
-          <label class="panel-toggle"><input type="checkbox" id="chk-budget"> aktiv</label></p>
-        <p class="box-lead">Simuliert, wie nah jeder Rahmen mit <b>Spacer + Vorbau</b> an dein Ziel kommt, und bewertet den Rest per Ampel. Rechnet auf <b>Rahmen-Ebene</b> — nicht am Lenker.</p>
+        <p class="eyebrow eyebrow-row"><span><span class="n">▤&#xFE0E;</span> <span data-i18n="budgetTitle">Tolerance &amp; budget</span></span>
+          <label class="panel-toggle"><input type="checkbox" id="chk-budget"> <span data-i18n="active">active</span></label></p>
+        <p class="box-lead" data-i18n-html="boxLead">Simulates how close each frame gets to your target with <b>spacers + stem</b>, then grades the rest with a traffic light. Works at <b>frame level</b> — not at the handlebar.</p>
         <details class="box-explain">
-          <summary>Genauer erklärt</summary>
+          <summary data-i18n="explainSummary">Explained in detail</summary>
           <ul>
-            <li><b>Budget</b> = wie viel Korrektur erlaubt ist. <b>Spacer-Spielraum</b> hebt den Stack (nur nach oben, bis zum Limit); <b>Vorbau&nbsp;min/max</b> stellt den Reach (länger = mehr, kürzer = weniger).</li>
-            <li><b>Toleranz</b> = wie viel „Rest" nach der Korrektur noch als Treffer zählt. Rest in beiden Toleranzen → <span class="ex-g">grün</span>; reißt eine um mehr als das Doppelte → <span class="ex-c">rot</span>; dazwischen → <span class="ex-w">gelb</span>.</li>
-            <li><b>Warum ohne Handposition?</b> Vorbau + Lenker sitzen bei jedem Rahmen gleich obendrauf und kürzen sich raus — wo deine Hände landen, steckt schon in deinem Ziel-Wert. Die Spacer-Zahl ist daher <em>relativ</em> zum Ziel, nicht der absolute Turm bis zum Lenker.</li>
-            <li><b>Ausgeschaltet</b> = keine Korrektur: roher Stack/Reach-Vergleich, Spalte „Abstand", nächster Rahmen ★&#xFE0E;.</li>
+            <li data-i18n-html="explainBudget">Budget explanation</li>
+            <li data-i18n-html="explainTol">Tolerance explanation</li>
+            <li data-i18n-html="explainHands">Hands explanation</li>
+            <li data-i18n-html="explainOff">Off explanation</li>
           </ul>
         </details>
         <div class="budget-body">
           <div class="grid2">
-            <div class="field"><label for="tol-reach">Toleranz Reach</label>
+            <div class="field"><label for="tol-reach" data-i18n="tolReach">Tolerance reach</label>
               <div class="in"><input type="number" id="tol-reach" step="1" inputmode="numeric"><span class="unit">±mm</span></div></div>
-            <div class="field"><label for="tol-stack">Toleranz Stack</label>
+            <div class="field"><label for="tol-stack" data-i18n="tolStack">Tolerance stack</label>
               <div class="in"><input type="number" id="tol-stack" step="1" inputmode="numeric"><span class="unit">±mm</span></div></div>
           </div>
-          <div class="field"><label for="sp-max">Spacer-Spielraum (max)</label>
+          <div class="field"><label for="sp-max" data-i18n="spMax">Spacer allowance (max)</label>
             <div class="in"><input type="number" id="sp-max" step="5" inputmode="numeric"><span class="unit">mm</span></div></div>
           <div class="grid2">
-            <div class="field"><label for="st-min">Vorbau min</label>
+            <div class="field"><label for="st-min" data-i18n="stMin">Stem min</label>
               <div class="in"><input type="number" id="st-min" step="10" min="70" max="150" inputmode="numeric"><span class="unit">mm</span></div></div>
-            <div class="field"><label for="st-max">Vorbau max</label>
+            <div class="field"><label for="st-max" data-i18n="stMax">Stem max</label>
               <div class="in"><input type="number" id="st-max" step="10" min="70" max="150" inputmode="numeric"><span class="unit">mm</span></div></div>
           </div>
-          <p class="row-hint">Wie viel Korrektur per Cockpit realistisch ist. Bestimmt die Ampel <em>nach</em> Kompensation. Vorbau 70–150&nbsp;mm.</p>
+          <p class="row-hint" data-i18n-html="budgetHint">How much cockpit correction is realistic. Sets the traffic light <em>after</em> compensation. Stem 70–150&nbsp;mm.</p>
         </div>
-        <p class="row-hint budget-off-hint" hidden>Deaktiviert — Spacer/Vorbau virtuell auf 0. Die Rahmen werden roh per Stack/Reach verglichen; die Spalte „Abstand" zeigt <code>√(ΔStack²+ΔReach²)</code>, der nächste Rahmen ist ★&#xFE0E; hervorgehoben.</p>
+        <p class="row-hint budget-off-hint" hidden data-i18n-html="budgetOffHint">Off — spacers/stem virtually 0. Frames are compared raw by stack/reach; the "Distance" column shows <code>√(ΔStack²+ΔReach²)</code>, the nearest frame is highlighted ★&#xFE0E;.</p>
       </div>
     </aside>
 
@@ -383,11 +387,11 @@
         <div class="plot-head">
           <h2>Stack &amp; Reach</h2>
           <div class="legend">
-            <span class="leg-budget"><span class="dot" style="background:var(--good)"></span>passend</span>
-            <span class="leg-budget"><span class="dot" style="background:var(--warn)"></span>grenzwertig</span>
-            <span class="leg-budget"><span class="dot" style="background:var(--crit)"></span>schwierig</span>
-            <span><span style="color:var(--accent);font-weight:700">✛&#xFE0E;</span>Ziel</span>
-            <label class="vec-toggle leg-budget"><input type="checkbox" id="chk-vectors"> Korrektur-Vektoren</label>
+            <span class="leg-budget"><span class="dot" style="background:var(--good)"></span><span data-i18n="legGood">fits</span></span>
+            <span class="leg-budget"><span class="dot" style="background:var(--warn)"></span><span data-i18n="legWarn">borderline</span></span>
+            <span class="leg-budget"><span class="dot" style="background:var(--crit)"></span><span data-i18n="legCrit">tough</span></span>
+            <span><span style="color:var(--accent);font-weight:700">✛&#xFE0E;</span><span data-i18n="legTarget">Target</span></span>
+            <label class="vec-toggle leg-budget"><input type="checkbox" id="chk-vectors"> <span data-i18n="legVectors">Correction vectors</span></label>
           </div>
         </div>
         <div id="plot"></div>
@@ -395,21 +399,21 @@
 
       <div class="panel tablecard">
         <div class="table-head">
-          <h2>Rahmen-Vergleich</h2>
-          <span class="row-hint" style="margin:0">Zellen sind editierbar · Reihenfolge bleibt, bis du „Nach Passform sortieren" drückst</span>
+          <h2 data-i18n="tableTitle">Frame comparison</h2>
+          <span class="row-hint" style="margin:0" data-i18n="tableHint">Cells are editable · order stays until you press “Sort by fit”</span>
         </div>
         <div class="scroll">
           <table id="frame-table">
             <thead>
               <tr>
-                <th>Rahmen</th>
+                <th data-i18n="thFrame">Frame</th>
                 <th>Stack</th>
                 <th>Reach</th>
                 <th>ΔStack</th>
                 <th>ΔReach</th>
                 <th>STR</th>
-                <th class="col-comp">Cockpit-Korrektur</th>
-                <th id="th-status">Passform</th>
+                <th class="col-comp" data-i18n="thComp">Cockpit correction</th>
+                <th id="th-status">Fit</th>
                 <th></th>
               </tr>
             </thead>
@@ -417,34 +421,34 @@
           </table>
         </div>
         <div class="db-picker">
-          <span class="db-label">◎&#xFE0E; Aus Datenbank</span>
-          <select id="db-bike" aria-label="Rad wählen"></select>
-          <select id="db-size" aria-label="Größe wählen"></select>
-          <button class="primary" id="btn-db-add">+ übernehmen</button>
-          <button class="ghost" id="btn-bestfit" title="Die 5 am besten passenden Räder aus der Datenbank finden und eintragen">★&#xFE0E; Top 5 aus DB</button>
-          <span class="db-hint" id="db-hint">Größe · Stack/Reach in mm · Geometrie laut Hersteller</span>
+          <span class="db-label">◎&#xFE0E; <span data-i18n="dbLabel">From database</span></span>
+          <select id="db-bike" data-i18n-aria="dbBikeAria" aria-label="Choose bike"></select>
+          <select id="db-size" data-i18n-aria="dbSizeAria" aria-label="Choose size"></select>
+          <button class="primary" id="btn-db-add" data-i18n="dbAdd">+ add</button>
+          <button class="ghost" id="btn-bestfit" data-i18n="bestfit" data-i18n-title="bestfitTitle" title="Find and add the 5 best-fitting bikes from the database">★&#xFE0E; Top 5 from DB</button>
+          <span class="db-hint" id="db-hint" data-i18n="dbHint">Size · stack/reach in mm · geometry per manufacturer</span>
         </div>
 
         <div class="addrow">
-          <button class="ghost" id="btn-add">+ Leerer Rahmen</button>
-          <button class="ghost" id="btn-sort" title="Rahmen nach Passform ordnen (beste zuerst)">↕&#xFE0E; Nach Passform sortieren</button>
-          <button class="ghost" id="btn-clear" title="Alle Rahmen aus der Vergleichstabelle löschen">Tabelle leeren</button>
-          <button class="ghost" id="btn-reset" title="Beispiel-Datensatz wiederherstellen">Beispiele laden</button>
+          <button class="ghost" id="btn-add" data-i18n="addEmpty">+ Empty frame</button>
+          <button class="ghost" id="btn-sort" data-i18n-title="sortTitle" title="Order frames by fit (best first)">↕&#xFE0E; Sort by fit</button>
+          <button class="ghost" id="btn-clear" data-i18n="clear" data-i18n-title="clearTitle" title="Remove all frames from the comparison table">Clear table</button>
+          <button class="ghost" id="btn-reset" data-i18n="loadExamples" data-i18n-title="resetTitle" title="Restore the example data set">Load examples</button>
         </div>
 
         <details class="assump">
-          <summary>Rechenannahmen</summary>
+          <summary data-i18n="assumpSummary">Assumptions</summary>
           <ul>
-            <li>Vergleichswert ist der <b>Rahmen</b>-Stack/Reach. <code>ΔStack&nbsp;=&nbsp;Ziel−Rahmen</code>, positiv = Rahmen flacher/kürzer als Ziel.</li>
-            <li>Spacer heben den Stack um <code>h·sin(73°)</code> und verkürzen den Reach um <code>h·cos(73°)</code>. Der Steuerrohrwinkel ist fest mit 73° angesetzt — sein Einfluss ist nur zweiter Ordnung.</li>
-            <li>Stack lässt sich per Spacer <b>anheben</b>, kaum absenken — ein Rahmen mit zu viel Stack bleibt daher eher rot (asymmetrisches Budget).</li>
-            <li>Reach wird über die Vorbau-Spanne ausgeglichen — Vorbauten in <b>10-mm-Schritten</b>, Referenz ist die (auf 10 mm gerundete) Budget-Mitte. Der Rest-Reach rechnet mit dem tatsächlich verbaubaren Vorbau; Spacer sind stufenlos.</li>
-            <li><b>Ampel:</b> grün, wenn die Rest-Abweichung innerhalb beider Toleranzen liegt · rot, wenn sie eine Toleranz um mehr als das Doppelte reißt · sonst gelb.</li>
+            <li data-i18n-html="assump1">assumption 1</li>
+            <li data-i18n-html="assump2">assumption 2</li>
+            <li data-i18n-html="assump3">assumption 3</li>
+            <li data-i18n-html="assump4">assumption 4</li>
+            <li data-i18n-html="assump5">assumption 5</li>
           </ul>
         </details>
       </div>
 
-      <p class="note"><b>Hinweis:</b> Das Tool ersetzt keinen Bikefitter. Es hilft, Rahmen-Geometrien systematisch gegen deine gemessenen Zielwerte zu vergleichen. Alle Daten bleiben lokal in diesem Browser gespeichert.</p>
+      <p class="note" data-i18n-html="note"><b>Note:</b> This tool is no substitute for a bike fitter. It helps compare frame geometries systematically against your measured target values. All data stays local in this browser.</p>
     </main>
   </div>
 </div>
@@ -454,6 +458,117 @@
 const KEY="rahmenfit_v1";
 const SHARE_KEY="v";
 const $=id=>document.getElementById(id);
+
+/* ---------- i18n (English default, German optional) ---------- */
+const LANG_KEY="rahmenfit_lang";
+let LANG="en";
+const I18N={
+  en:{
+    appTitle:"Frame Fit",
+    tagline:"Your fit targets vs. frame geometries — with spacer and stem correction.",
+    btnShare:"↗︎ Share", btnShareTitle:"Share this comparison as a link",
+    btnExportTitle:"Save all data as JSON", btnImportTitle:"Load JSON",
+    btnThemeTitle:"Toggle light/dark", btnThemeAria:"Toggle theme",
+    shareBarTitle:"Link to this comparison", shareUrlAria:"Comparison link", copy:"Copy", close:"Close",
+    exampleTitle:"Example data", exampleText:"Target stack/reach and the frames are placeholders — replace them with your real numbers.", gotIt:"Got it",
+    targetGeo:"Target geometry", modeFrame:"Frame", modeCockpit:"Cockpit",
+    targetStack:"Target stack", targetReach:"Target reach",
+    frameHint:"The frame target from your fitter. The crosshair in the chart.",
+    cReach:"Reach → bar centre", cStack:"Stack → bar top", cStem:"Stem length", cAngle:"Stem angle", cSpacer:"Spacer height", cHta:"Head angle",
+    cockpitTargetPrefix:"→ Frame target:", cockpitAssumption:"Headset ~10 mm, half the bar ~15 mm assumed.",
+    budgetTitle:"Tolerance & budget", active:"active",
+    boxLead:"Simulates how close each frame gets to your target with <b>spacers + stem</b>, then grades the rest with a traffic light. Works at <b>frame level</b> — not at the handlebar.",
+    explainSummary:"Explained in detail",
+    explainBudget:"<b>Budget</b> = how much correction is allowed. <b>Spacer allowance</b> raises stack (upward only, up to the limit); <b>stem&nbsp;min/max</b> sets reach (longer = more, shorter = less).",
+    explainTol:"<b>Tolerance</b> = how much residual after correction still counts as a hit. Residual within both tolerances → <span class=\"ex-g\">green</span>; exceeds one by more than double → <span class=\"ex-c\">red</span>; in between → <span class=\"ex-w\">amber</span>.",
+    explainHands:"<b>Why no hand position?</b> Stem + bar sit identically on top of every frame and cancel out — where your hands land is already baked into your target value. So the spacer number is <em>relative</em> to the target, not the absolute stack up to the bar.",
+    explainOff:"<b>Off</b> = no correction: raw stack/reach comparison, “Distance” column, nearest frame ★︎.",
+    tolReach:"Tolerance reach", tolStack:"Tolerance stack", spMax:"Spacer allowance (max)", stMin:"Stem min", stMax:"Stem max",
+    budgetHint:"How much cockpit correction is realistic. Sets the traffic light <em>after</em> compensation. Stem 70–150&nbsp;mm.",
+    budgetOffHint:"Off — spacers/stem virtually 0. Frames are compared raw by stack/reach; the “Distance” column shows <code>√(ΔStack²+ΔReach²)</code>, the nearest frame is highlighted ★︎.",
+    legGood:"fits", legWarn:"borderline", legCrit:"tough", legTarget:"Target", legVectors:"Correction vectors",
+    tableTitle:"Frame comparison", tableHint:"Cells are editable · order stays until you press “Sort by fit”",
+    thFrame:"Frame", thComp:"Cockpit correction", thStatusFit:"Fit", thStatusDist:"Distance",
+    dbLabel:"From database", dbBikeAria:"Choose bike", dbSizeAria:"Choose size", dbAdd:"+ add",
+    bestfit:"★︎ Top 5 from DB", bestfitTitle:"Find and add the 5 best-fitting bikes from the database",
+    dbHint:"Size · stack/reach in mm · geometry per manufacturer",
+    addEmpty:"+ Empty frame", sortFit:"↕︎ Sort by fit", sortNear:"↕︎ Sort by proximity", sortTitle:"Order frames by fit (best first)",
+    clear:"Clear table", clearTitle:"Remove all frames from the comparison table", loadExamples:"Load examples", resetTitle:"Restore the example data set",
+    assumpSummary:"Assumptions",
+    assump1:"The comparison value is the <b>frame</b> stack/reach. <code>ΔStack&nbsp;=&nbsp;target−frame</code>, positive = frame lower/shorter than target.",
+    assump2:"Spacers raise stack by <code>h·sin(73°)</code> and shorten reach by <code>h·cos(73°)</code>. The head-tube angle is fixed at 73° — its effect is only second order.",
+    assump3:"Stack can be <b>raised</b> with spacers, barely lowered — a frame with too much stack therefore tends to stay red (asymmetric budget).",
+    assump4:"Reach is compensated across the stem range — stems in <b>10&nbsp;mm steps</b>, reference is the (10&nbsp;mm-rounded) budget midpoint. Residual reach uses the actually mountable stem; spacers are continuous.",
+    assump5:"<b>Traffic light:</b> green if the residual is within both tolerances · red if it exceeds one tolerance by more than double · otherwise amber.",
+    note:"<b>Note:</b> This tool is no substitute for a bike fitter. It helps compare frame geometries systematically against your measured target values. All data stays local in this browser.",
+    /* dynamic */
+    recSpacers:"Spacers", recStem:"Stem", recRest:"Residual", exact:"spot on",
+    tooShort:"too short", tooLong:"too long", tooLow:"too low", tooHigh:"too high",
+    armClear:"Really clear?", armReset:"Load examples?",
+    bestNote:"Top 5 matches added — #1:", exportFail:"Export failed: ", unknown:"unknown", importFail:"Import failed: ",
+    shareEmpty:"Add frames to the table first, then share.", copied:"Copied ✓", copyManual:"Copy manually",
+    bestSizePrefix:"Best size for your target:", plotTarget:"TARGET",
+    delTitle:"Remove frame", delAria:"remove",
+    newFrame:"New frame", exactRow:"exactly on target", restRow:"Residual",
+    plotAria:"Target crosshair, reach vs stack, with the frame endpoints"
+  },
+  de:{
+    appTitle:"Rahmen-Fit",
+    tagline:"Deine Fit-Zielwerte gegen Rahmen-Geometrien — mit Spacer- und Vorbau-Korrektur.",
+    btnShare:"↗︎ Teilen", btnShareTitle:"Diesen Vergleich als Link teilen",
+    btnExportTitle:"Alle Daten als JSON sichern", btnImportTitle:"JSON laden",
+    btnThemeTitle:"Hell/Dunkel umschalten", btnThemeAria:"Theme umschalten",
+    shareBarTitle:"Link zum Vergleich", shareUrlAria:"Vergleichs-Link", copy:"Kopieren", close:"Schließen",
+    exampleTitle:"Beispieldaten", exampleText:"Ziel-Stack/Reach und die Rahmen sind Platzhalter — überschreib sie mit deinen echten Werten.", gotIt:"Verstanden",
+    targetGeo:"Ziel-Geometrie", modeFrame:"Rahmen", modeCockpit:"Cockpit",
+    targetStack:"Ziel-Stack", targetReach:"Ziel-Reach",
+    frameHint:"Der Rahmen-Zielwert vom Fitter. Das Fadenkreuz im Diagramm.",
+    cReach:"Reach → Lenkermitte", cStack:"Stack → Lenker-Oberfl.", cStem:"Vorbaulänge", cAngle:"Vorbauwinkel", cSpacer:"Spacer-Höhe", cHta:"Lenkwinkel",
+    cockpitTargetPrefix:"→ Rahmen-Ziel:", cockpitAssumption:"Steuersatz ~10 mm, halber Lenker ~15 mm pauschal angesetzt.",
+    budgetTitle:"Toleranz & Budget", active:"aktiv",
+    boxLead:"Simuliert, wie nah jeder Rahmen mit <b>Spacer + Vorbau</b> an dein Ziel kommt, und bewertet den Rest per Ampel. Rechnet auf <b>Rahmen-Ebene</b> — nicht am Lenker.",
+    explainSummary:"Genauer erklärt",
+    explainBudget:"<b>Budget</b> = wie viel Korrektur erlaubt ist. <b>Spacer-Spielraum</b> hebt den Stack (nur nach oben, bis zum Limit); <b>Vorbau&nbsp;min/max</b> stellt den Reach (länger = mehr, kürzer = weniger).",
+    explainTol:"<b>Toleranz</b> = wie viel „Rest\" nach der Korrektur noch als Treffer zählt. Rest in beiden Toleranzen → <span class=\"ex-g\">grün</span>; reißt eine um mehr als das Doppelte → <span class=\"ex-c\">rot</span>; dazwischen → <span class=\"ex-w\">gelb</span>.",
+    explainHands:"<b>Warum ohne Handposition?</b> Vorbau + Lenker sitzen bei jedem Rahmen gleich obendrauf und kürzen sich raus — wo deine Hände landen, steckt schon in deinem Ziel-Wert. Die Spacer-Zahl ist daher <em>relativ</em> zum Ziel, nicht der absolute Turm bis zum Lenker.",
+    explainOff:"<b>Ausgeschaltet</b> = keine Korrektur: roher Stack/Reach-Vergleich, Spalte „Abstand\", nächster Rahmen ★︎.",
+    tolReach:"Toleranz Reach", tolStack:"Toleranz Stack", spMax:"Spacer-Spielraum (max)", stMin:"Vorbau min", stMax:"Vorbau max",
+    budgetHint:"Wie viel Korrektur per Cockpit realistisch ist. Bestimmt die Ampel <em>nach</em> Kompensation. Vorbau 70–150&nbsp;mm.",
+    budgetOffHint:"Deaktiviert — Spacer/Vorbau virtuell auf 0. Die Rahmen werden roh per Stack/Reach verglichen; die Spalte „Abstand\" zeigt <code>√(ΔStack²+ΔReach²)</code>, der nächste Rahmen ist ★︎ hervorgehoben.",
+    legGood:"passend", legWarn:"grenzwertig", legCrit:"schwierig", legTarget:"Ziel", legVectors:"Korrektur-Vektoren",
+    tableTitle:"Rahmen-Vergleich", tableHint:"Zellen sind editierbar · Reihenfolge bleibt, bis du „Nach Passform sortieren\" drückst",
+    thFrame:"Rahmen", thComp:"Cockpit-Korrektur", thStatusFit:"Passform", thStatusDist:"Abstand",
+    dbLabel:"Aus Datenbank", dbBikeAria:"Rad wählen", dbSizeAria:"Größe wählen", dbAdd:"+ übernehmen",
+    bestfit:"★︎ Top 5 aus DB", bestfitTitle:"Die 5 am besten passenden Räder aus der Datenbank finden und eintragen",
+    dbHint:"Größe · Stack/Reach in mm · Geometrie laut Hersteller",
+    addEmpty:"+ Leerer Rahmen", sortFit:"↕︎ Nach Passform sortieren", sortNear:"↕︎ Nach Nähe sortieren", sortTitle:"Rahmen nach Passform ordnen (beste zuerst)",
+    clear:"Tabelle leeren", clearTitle:"Alle Rahmen aus der Vergleichstabelle löschen", loadExamples:"Beispiele laden", resetTitle:"Beispiel-Datensatz wiederherstellen",
+    assumpSummary:"Rechenannahmen",
+    assump1:"Vergleichswert ist der <b>Rahmen</b>-Stack/Reach. <code>ΔStack&nbsp;=&nbsp;Ziel−Rahmen</code>, positiv = Rahmen flacher/kürzer als Ziel.",
+    assump2:"Spacer heben den Stack um <code>h·sin(73°)</code> und verkürzen den Reach um <code>h·cos(73°)</code>. Der Steuerrohrwinkel ist fest mit 73° angesetzt — sein Einfluss ist nur zweiter Ordnung.",
+    assump3:"Stack lässt sich per Spacer <b>anheben</b>, kaum absenken — ein Rahmen mit zu viel Stack bleibt daher eher rot (asymmetrisches Budget).",
+    assump4:"Reach wird über die Vorbau-Spanne ausgeglichen — Vorbauten in <b>10-mm-Schritten</b>, Referenz ist die (auf 10 mm gerundete) Budget-Mitte. Der Rest-Reach rechnet mit dem tatsächlich verbaubaren Vorbau; Spacer sind stufenlos.",
+    assump5:"<b>Ampel:</b> grün, wenn die Rest-Abweichung innerhalb beider Toleranzen liegt · rot, wenn sie eine Toleranz um mehr als das Doppelte reißt · sonst gelb.",
+    note:"<b>Hinweis:</b> Das Tool ersetzt keinen Bikefitter. Es hilft, Rahmen-Geometrien systematisch gegen deine gemessenen Zielwerte zu vergleichen. Alle Daten bleiben lokal in diesem Browser gespeichert.",
+    recSpacers:"Spacer", recStem:"Vorbau", recRest:"Rest", exact:"exakt getroffen",
+    tooShort:"zu kurz", tooLong:"zu lang", tooLow:"zu niedrig", tooHigh:"zu hoch",
+    armClear:"Wirklich löschen?", armReset:"Beispiele wirklich laden?",
+    bestNote:"5 beste Treffer eingetragen — Nr. 1:", exportFail:"Export nicht möglich: ", unknown:"unbekannt", importFail:"Import fehlgeschlagen: ",
+    shareEmpty:"Erst Rahmen in die Tabelle legen, dann teilen.", copied:"Kopiert ✓", copyManual:"Manuell kopieren",
+    bestSizePrefix:"Beste Größe für dein Ziel:", plotTarget:"ZIEL",
+    delTitle:"Rahmen entfernen", delAria:"entfernen",
+    newFrame:"Neuer Rahmen", exactRow:"exakt im Ziel", restRow:"Rest",
+    plotAria:"Zielkreuz Reach gegen Stack mit den Rahmen-Endpunkten"
+  }
+};
+function t(k){ return (I18N[LANG] && I18N[LANG][k]!=null) ? I18N[LANG][k] : (I18N.en[k]!=null?I18N.en[k]:k); }
+function applyI18n(){
+  document.documentElement.lang=LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{ el.textContent=t(el.getAttribute("data-i18n")); });
+  document.querySelectorAll("[data-i18n-html]").forEach(el=>{ el.innerHTML=t(el.getAttribute("data-i18n-html")); });
+  document.querySelectorAll("[data-i18n-title]").forEach(el=>{ el.title=t(el.getAttribute("data-i18n-title")); });
+  document.querySelectorAll("[data-i18n-aria]").forEach(el=>{ el.setAttribute("aria-label",t(el.getAttribute("data-i18n-aria"))); });
+}
 
 /* ---------- shareable-comparison link (URL hash) ---------- */
 // compact codec: JSON -> UTF-8 -> base64url, so the whole comparison rides in the hash
@@ -490,7 +605,7 @@ function decodeShare(code){
   if(Array.isArray(p.b)) st.budget={spacerMax:num(p.b[0]),stemMin:num(p.b[1]),stemMax:num(p.b[2])};
   st.budgetEnabled = p.be?true:false;
   st.showVectors = p.sv?true:false;
-  st.frames = p.f.map((row,i)=>({id:id(),seq:i,name:String(row[0]??"Rahmen"),stack:num(row[1]),reach:num(row[2])}));
+  st.frames = p.f.map((row,i)=>({id:id(),seq:i,name:String(row[0]??t("modeFrame")),stack:num(row[1]),reach:num(row[2])}));
   return st;
 }
 function readShareHash(){
@@ -752,7 +867,7 @@ function buildRows(){
       <td class="o-str"></td>
       <td class="rec o-rec col-comp"></td>
       <td class="o-status"></td>
-      <td><button class="del-btn" tabindex="-1" title="Rahmen entfernen" aria-label="entfernen">×</button></td>`;
+      <td><button class="del-btn" tabindex="-1" title="${t("delTitle")}" aria-label="${t("delAria")}">×</button></td>`;
     tr.querySelectorAll("input").forEach(inp=>{
       inp.addEventListener("input",()=>{
         const k=inp.dataset.k;
@@ -806,26 +921,26 @@ function deltaCell(v){
   return `<span class="delta ${cls}">${signed(v)}</span>`;
 }
 function statusPill(s){
-  const label={good:"passend",warn:"grenzwertig",crit:"schwierig"}[s];
+  const label={good:t("legGood"),warn:t("legWarn"),crit:t("legCrit")}[s];
   return `<span class="pill ${s}">${label}</span>`;
 }
 // remaining deviation as plain-text items, each with its direction in parentheses (for the hover tooltip)
 function restItems(c){
   const items=[];
-  if(Math.round(c.resStack)!==0) items.push(`${signed(c.resStack)} mm Stack (${c.resStack>0?"zu tief":"zu hoch"})`);
-  if(Math.round(c.resReach)!==0) items.push(`${signed(c.resReach)} mm Reach (${c.resReach>0?"zu kurz":"zu lang"})`);
+  if(Math.round(c.resStack)!==0) items.push(`${signed(c.resStack)} mm Stack (${c.resStack>0?t("tooLow"):t("tooHigh")})`);
+  if(Math.round(c.resReach)!==0) items.push(`${signed(c.resReach)} mm Reach (${c.resReach>0?t("tooShort"):t("tooLong")})`);
   return items;
 }
 function recText(c){
-  // three labelled lines: Spacer, Vorbau, and the remaining deviation with its direction;
+  // three labelled lines: spacers, stem, and the remaining deviation with its direction;
   // if both height and length are off, each goes on its own line (aligned under one another)
   const rest=[];
-  if(Math.round(c.resReach)!==0) rest.push(`${Math.abs(Math.round(c.resReach))} mm ${c.resReach>0?"zu kurz":"zu lang"}`);
-  if(Math.round(c.resStack)!==0) rest.push(`${Math.abs(Math.round(c.resStack))} mm ${c.resStack>0?"zu niedrig":"zu hoch"}`);
-  const restVals=rest.length?rest.map(r=>`<b>${r}</b>`).join(""):`<b>exakt getroffen</b>`;
-  return `<span class="rc-k">Spacer:</span> ${fmt(c.spacer)} mm`
-       +`<br><span class="rc-k">Vorbau:</span> ${fmt(c.stem)} mm`
-       +`<br><span class="rc-k">Rest:</span><span class="rc-vals">${restVals}</span>`;
+  if(Math.round(c.resReach)!==0) rest.push(`${Math.abs(Math.round(c.resReach))} mm ${c.resReach>0?t("tooShort"):t("tooLong")}`);
+  if(Math.round(c.resStack)!==0) rest.push(`${Math.abs(Math.round(c.resStack))} mm ${c.resStack>0?t("tooLow"):t("tooHigh")}`);
+  const restVals=rest.length?rest.map(r=>`<b>${r}</b>`).join(""):`<b>${t("exact")}</b>`;
+  return `<span class="rc-k">${t("recSpacers")}:</span> ${fmt(c.spacer)} mm`
+       +`<br><span class="rc-k">${t("recStem")}:</span> ${fmt(c.stem)} mm`
+       +`<br><span class="rc-k">${t("recRest")}:</span><span class="rc-vals">${restVals}</span>`;
 }
 function escapeAttr(s){return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");}
 
@@ -909,7 +1024,7 @@ function drawPlot(comp){
   g+=`<line x1="${tx-26}" y1="${ty}" x2="${tx+26}" y2="${ty}" class="cross-core"/>`;
   g+=`<line x1="${tx}" y1="${ty-26}" x2="${tx}" y2="${ty+26}" class="cross-core"/>`;
   g+=`<circle cx="${tx}" cy="${ty}" r="3.2" fill="var(--accent)"/>`;
-  g+=`<text x="${tx}" y="${m.t-9}" text-anchor="middle" class="ptlab tgt">ZIEL ${fmt(t.reach)} / ${fmt(t.stack)}</text>`;
+  g+=`<text x="${tx}" y="${m.t-9}" text-anchor="middle" class="ptlab tgt">${(I18N[LANG]&&I18N[LANG].plotTarget)||"TARGET"} ${fmt(t.reach)} / ${fmt(t.stack)}</text>`;
 
   // optional correction vectors (raw -> compensated)
   let vecs="";
@@ -946,7 +1061,7 @@ function drawPlot(comp){
     if(!toRight && x-12-w<m.l+2) toRight=true;
     const lx=toRight?x+9:x-9, anchor=toRight?"start":"end";
     let title=`${f.name} · Stack ${fmt(num(f.stack))} / Reach ${fmt(num(f.reach))}`;
-    if(c.active){ const ri=restItems(c); title+=` · ${ri.length?`Rest ${ri.join(" / ")}`:"exakt im Ziel"}`; }
+    if(c.active){ const ri=restItems(c); const L=I18N[LANG]||I18N.en; title+=` · ${ri.length?`${L.restRow} ${ri.join(" / ")}`:L.exactRow}`; }
     pts+=`<g><title>${escapeAttr(title)}</title>`;
     if(Math.abs(ly-y)>5) pts+=`<line x1="${x}" y1="${y}" x2="${lx+(toRight?-2:2)}" y2="${ly-3}" class="leader"/>`;
     if(hi) pts+=`<circle cx="${x}" cy="${y}" r="9" fill="none" stroke="var(--accent)" stroke-width="1.8"/>`;
@@ -955,7 +1070,7 @@ function drawPlot(comp){
     pts+=`</g>`;
   });
 
-  const svg=`<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="Zielkreuz Reach gegen Stack mit den Rahmen-Endpunkten">
+  const svg=`<svg class="plot" viewBox="0 0 ${W} ${H}" role="img" aria-label="${(I18N[LANG]||I18N.en).plotAria}">
     <style>
       .grid{stroke:var(--grid);stroke-width:1}
       .axlab{fill:var(--muted);font-family:"IBM Plex Mono",monospace;font-size:11px}
@@ -979,27 +1094,27 @@ function shortName(n){return n.replace(/^Beispiel\s+/i,"").slice(0,20);}
 /* ---------- actions ---------- */
 $("btn-add").addEventListener("click",()=>{
   const t=state.target;
-  const nf={id:id(),seq:nextSeq(),name:"Neuer Rahmen",stack:t.stack,reach:t.reach};
+  const nf={id:id(),seq:nextSeq(),name:(I18N[LANG]||I18N.en).newFrame,stack:t.stack,reach:t.reach};
   state.frames.push(nf); // always appended at the bottom
   save(); buildRows(); renderOutputs();
   const tr=$("frame-body").querySelector(`tr[data-id="${nf.id}"]`);
   if(tr){tr.scrollIntoView({block:"nearest"}); const ni=tr.querySelector(".name-in"); ni.focus(); ni.select();}
 });
 // in-button two-click confirm (native confirm() is blocked in the artifact sandbox)
-function armConfirm(btn, confirmLabel, action, guard){
-  const orig=btn.textContent; let armed=false, t=null;
-  const reset=()=>{ armed=false; btn.textContent=orig; btn.classList.remove("confirming"); if(t){clearTimeout(t);t=null;} };
+function armConfirm(btn, labelKey, origKey, action, guard){
+  let armed=false, tm=null;
+  const reset=()=>{ armed=false; btn.textContent=t(origKey); btn.classList.remove("confirming"); if(tm){clearTimeout(tm);tm=null;} };
   btn.addEventListener("click",()=>{
     if(guard && !guard()) return;
     if(armed){ reset(); action(); return; }
-    armed=true; btn.textContent=confirmLabel; btn.classList.add("confirming");
-    t=setTimeout(reset,4000);
+    armed=true; btn.textContent=t(labelKey); btn.classList.add("confirming");
+    tm=setTimeout(reset,4000);
   });
 }
-armConfirm($("btn-clear"),"Wirklich löschen?",()=>{
+armConfirm($("btn-clear"),"armClear","clear",()=>{
   state.frames=[]; state.example=false; save(); buildRows(); renderOutputs(); updateBanner();
 }, ()=>state.frames.length>0);
-armConfirm($("btn-reset"),"Beispiele wirklich laden?",()=>{
+armConfirm($("btn-reset"),"armReset","loadExamples",()=>{
   const d=defaults(); state.frames=d.frames; state.target=d.target;
   save(); syncInputs(); buildRows(); renderOutputs();
 });
@@ -1028,8 +1143,8 @@ $("btn-bestfit").addEventListener("click",()=>{
     if(tr){ if(i===0) tr.scrollIntoView({block:"nearest"}); tr.classList.remove("flash"); void tr.offsetWidth; tr.classList.add("flash"); }
   });
   const best=top[0];
-  let note=`5 beste Treffer eingetragen — Nr. 1: ${best.b.brand} ${best.b.model} ${best.s.size} (ΔStack ${signed(best.c.dStack)} / ΔReach ${signed(best.c.dReach)} mm)`;
-  if(state.budgetEnabled) note+=` · ${ {good:"passend",warn:"grenzwertig",crit:"schwierig"}[best.c.status] }`;
+  let note=`${t("bestNote")} ${best.b.brand} ${best.b.model} ${best.s.size} (ΔStack ${signed(best.c.dStack)} / ΔReach ${signed(best.c.dReach)} mm)`;
+  if(state.budgetEnabled) note+=` · ${ {good:t("legGood"),warn:t("legWarn"),crit:t("legCrit")}[best.c.status] }`;
   $("db-hint").textContent=note;
 });
 let downloadsNS=null;
@@ -1049,7 +1164,7 @@ $("btn-export").addEventListener("click",async()=>{
     await downloadsNS.save({filename:"rahmen-fit.json",data});
   }catch(err){
     if(err&&err.code==="declined") return;
-    alert("Export nicht möglich: "+((err&&err.message)||"unbekannt"));
+    alert(t("exportFail")+((err&&err.message)||t("unknown")));
   }
 });
 $("btn-import").addEventListener("click",()=>$("file-import").click());
@@ -1064,7 +1179,7 @@ $("file-import").addEventListener("change",e=>{
       state=Object.assign(defaults(),s); state.example=false;
       normalizeSeq();
       save(); syncInputs(); applyBudgetUI(); buildRows(); renderOutputs(); updateBanner();
-    }catch(err){alert("Import fehlgeschlagen: "+err.message);}
+    }catch(err){alert(t("importFail")+err.message);}
   };
   r.readAsText(file); e.target.value="";
 });
@@ -1074,7 +1189,7 @@ function buildShareUrl(){
   return base+"#"+SHARE_KEY+"="+encodeShare(state);
 }
 $("btn-share").addEventListener("click",async()=>{
-  if(!state.frames.length){ $("db-hint").textContent="Erst Rahmen in die Tabelle legen, dann teilen."; return; }
+  if(!state.frames.length){ $("db-hint").textContent=t("shareEmpty"); return; }
   const url=buildShareUrl();
   $("share-url").value=url;
   $("share-bar").hidden=false;
@@ -1082,7 +1197,7 @@ $("btn-share").addEventListener("click",async()=>{
   try{
     if(navigator.clipboard&&navigator.clipboard.writeText){
       await navigator.clipboard.writeText(url);
-      flashShareCopy("Kopiert ✓");
+      flashShareCopy(t("copied"));
     }
   }catch(e){/* clipboard blocked in sandbox — the field is selected for manual copy */}
 });
@@ -1094,9 +1209,9 @@ $("btn-share-copy").addEventListener("click",async()=>{
   const url=$("share-url").value||buildShareUrl();
   $("share-url").value=url; $("share-url").focus(); $("share-url").select();
   try{
-    if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(url); flashShareCopy("Kopiert ✓"); return; }
-    document.execCommand("copy"); flashShareCopy("Kopiert ✓");
-  }catch(e){ flashShareCopy("Manuell kopieren"); }
+    if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(url); flashShareCopy(t("copied")); return; }
+    document.execCommand("copy"); flashShareCopy(t("copied"));
+  }catch(e){ flashShareCopy(t("copyManual")); }
 });
 $("btn-share-close").addEventListener("click",()=>{ $("share-bar").hidden=true; });
 
@@ -1139,8 +1254,8 @@ function applyBudgetUI(){
   $("chk-budget").checked=on;
   $("budget-panel").classList.toggle("off",!on);
   document.querySelector(".budget-off-hint").hidden=on;
-  $("th-status").textContent = on ? "Passform" : "Abstand";
-  $("btn-sort").textContent = on ? "↕︎ Nach Passform sortieren" : "↕︎ Nach Nähe sortieren";
+  $("th-status").textContent = on ? t("thStatusFit") : t("thStatusDist");
+  $("btn-sort").textContent = on ? t("sortFit") : t("sortNear");
   $("chk-vectors").disabled=!on;
   document.querySelectorAll(".leg-budget").forEach(el=>{el.hidden=!on;});
 }
@@ -1189,8 +1304,8 @@ function sizeLabel(s,isBest){ return `${s.size} · ${s.stack}/${s.reach}${isBest
 function bestHint(b,idx){
   const s=b.sizes[idx];
   const c=compensate({stack:s.stack,reach:s.reach});
-  let txt=`Beste Größe für dein Ziel: ${s.size}`;
-  if(state.budgetEnabled && c.status) txt+=` — ${ {good:"passend",warn:"grenzwertig",crit:"schwierig"}[c.status] }`;
+  let txt=`${t("bestSizePrefix")} ${s.size}`;
+  if(state.budgetEnabled && c.status) txt+=` — ${ {good:t("legGood"),warn:t("legWarn"),crit:t("legCrit")}[c.status] }`;
   return txt;
 }
 function populateSizes(){
@@ -1222,7 +1337,23 @@ $("btn-db-add").addEventListener("click",()=>{
   if(tr) tr.scrollIntoView({block:"nearest"});
 });
 
+/* ---------- language switch (English default, German optional) ---------- */
+try{ const sl=localStorage.getItem(LANG_KEY); if(sl==="de"||sl==="en") LANG=sl; }catch(e){}
+function setLang(l){
+  LANG=(l==="de")?"de":"en";
+  try{ localStorage.setItem(LANG_KEY,LANG); }catch(e){}
+  $("lang-en").classList.toggle("active",LANG==="en");
+  $("lang-de").classList.toggle("active",LANG==="de");
+  applyI18n();
+  applyModeUI(); applyBudgetUI(); buildRows(); renderOutputs(); updateBanner();
+}
+$("lang-en").addEventListener("click",()=>setLang("en"));
+$("lang-de").addEventListener("click",()=>setLang("de"));
+
 /* ---------- init ---------- */
+$("lang-en").classList.toggle("active",LANG==="en");
+$("lang-de").classList.toggle("active",LANG==="de");
+applyI18n();
 bindTop();
 bindCockpit();
 applyModeUI();
