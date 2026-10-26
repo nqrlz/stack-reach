@@ -114,6 +114,7 @@
   /* hide the cockpit-correction column when the budget is off */
   table.no-budget .col-comp{display:none}
   .o-status .dist{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+  td .tt.approx{color:var(--faint)}   /* derived (≈) effective top tube, dimmed vs. real manufacturer value */
   .o-status .dist.closest{color:var(--accent);font-weight:700}
 
   .field{display:flex;flex-direction:column;gap:3px;margin-bottom:11px}
@@ -418,6 +419,7 @@
                 <th data-i18n="thFrame">Frame</th>
                 <th>Stack</th>
                 <th>Reach</th>
+                <th data-i18n="thTT">Top tube</th>
                 <th>ΔStack</th>
                 <th>ΔReach</th>
                 <th>STR</th>
@@ -499,6 +501,7 @@ const I18N={
     legGood:"fits", legWarn:"borderline", legCrit:"tough", legTarget:"Target", legVectors:"Correction vectors",
     tableTitle:"Frame comparison", tableHint:"Cells are editable · order stays until you press “Sort by fit”",
     thFrame:"Frame", thComp:"Cockpit correction", thStatusFit:"Fit", thStatusDist:"Distance",
+    thTT:"Top tube", ttApproxTitle:"Effective top tube — derived from stack/reach (≈)", ttRealTitle:"Effective top tube (manufacturer)",
     dbLabel:"From database", dbBikeAria:"Choose bike", dbSizeAria:"Choose size", dbAdd:"+ add",
     bestfit:"★︎ Top 5 from DB", bestfitTitle:"Find and add the 5 best-fitting bikes from the database",
     dbHint:"Size · stack/reach in mm · geometry per manufacturer",
@@ -549,6 +552,7 @@ const I18N={
     legGood:"passend", legWarn:"grenzwertig", legCrit:"schwierig", legTarget:"Ziel", legVectors:"Korrektur-Vektoren",
     tableTitle:"Rahmen-Vergleich", tableHint:"Zellen sind editierbar · Reihenfolge bleibt, bis du „Nach Passform sortieren\" drückst",
     thFrame:"Rahmen", thComp:"Cockpit-Korrektur", thStatusFit:"Passform", thStatusDist:"Abstand",
+    thTT:"Oberrohr", ttApproxTitle:"Effektive Oberrohrlänge — aus Stack/Reach berechnet (≈)", ttRealTitle:"Effektive Oberrohrlänge (Hersteller)",
     dbLabel:"Aus Datenbank", dbBikeAria:"Rad wählen", dbSizeAria:"Größe wählen", dbAdd:"+ übernehmen",
     bestfit:"★︎ Top 5 aus DB", bestfitTitle:"Die 5 am besten passenden Räder aus der Datenbank finden und eintragen",
     dbHint:"Größe · Stack/Reach in mm · Geometrie laut Hersteller",
@@ -601,7 +605,7 @@ function encodeShare(st){
     be: st.budgetEnabled?1:0,
     sv: st.showVectors?1:0,
     rw: Number(st.reachWeight),
-    f: st.frames.map(f=>[String(f.name), Number(f.stack), Number(f.reach)])
+    f: st.frames.map(f=>[String(f.name), Number(f.stack), Number(f.reach), (f.tt!=null&&f.tt!=="")?Number(f.tt):null])
   };
   return b64urlEncode(JSON.stringify(p));
 }
@@ -618,7 +622,7 @@ function decodeShare(code){
   st.budgetEnabled = p.be?true:false;
   st.showVectors = p.sv?true:false;
   if(p.rw!=null) st.reachWeight=num(p.rw);
-  st.frames = p.f.map((row,i)=>({id:id(),seq:i,name:String(row[0]??t("modeFrame")),stack:num(row[1]),reach:num(row[2])}));
+  st.frames = p.f.map((row,i)=>{const o={id:id(),seq:i,name:String(row[0]??t("modeFrame")),stack:num(row[1]),reach:num(row[2])}; if(row[3]!=null) o.tt=num(row[3]); return o;});
   return st;
 }
 function readShareHash(){
@@ -721,7 +725,7 @@ const BIKE_DB=[
   {brand:"Megamo", model:"Silk", year:2026, sizes:[
     {size:"XS",stack:516,reach:372},{size:"S",stack:535,reach:382},{size:"M",stack:557,reach:395},{size:"L",stack:581,reach:408},{size:"XL",stack:605,reach:416}]},
   {brand:"Megamo", model:"West", year:2026, sizes:[
-    {size:"XS",stack:548,reach:378},{size:"S",stack:563,reach:391},{size:"M",stack:576,reach:400},{size:"L",stack:600,reach:405},{size:"XL",stack:625,reach:415}]},
+    {size:"XS",stack:548,reach:378,tt:530},{size:"S",stack:563,reach:391,tt:550},{size:"M",stack:576,reach:400,tt:565},{size:"L",stack:600,reach:405,tt:580},{size:"XL",stack:625,reach:415,tt:600}]},
   {brand:"Merida", model:"Mission", year:2026, sizes:[
     {size:"XXS",stack:529,reach:370},{size:"XS",stack:542,reach:377},{size:"S",stack:555,reach:384},{size:"M",stack:569,reach:391},{size:"L",stack:584,reach:398},{size:"XL",stack:610,reach:405}]},
   {brand:"OPEN", model:"U.P. 1.0", year:2020, sizes:[
@@ -733,7 +737,7 @@ const BIKE_DB=[
   {brand:"OPEN", model:"WI.DE. 2.0", year:2026, sizes:[
     {size:"XS",stack:540,reach:349},{size:"SM",stack:565,reach:361},{size:"MD",stack:590,reach:374},{size:"LG",stack:615,reach:386},{size:"XL",stack:640,reach:398}]},
   {brand:"Orbea", model:"Terra", year:2025, sizes:[
-    {size:"XS",stack:535,reach:386},{size:"S",stack:558,reach:392},{size:"M",stack:580,reach:400},{size:"L",stack:602,reach:406},{size:"XL",stack:625,reach:412},{size:"XXL",stack:645,reach:417}]},
+    {size:"XS",stack:535,reach:386,tt:535},{size:"S",stack:558,reach:392,tt:547},{size:"M",stack:580,reach:400,tt:561},{size:"L",stack:602,reach:406,tt:573},{size:"XL",stack:625,reach:412,tt:585},{size:"XXL",stack:645,reach:417,tt:596}]},
   {brand:"Orbea", model:"Terra Race", year:2026, sizes:[
     {size:"XS",stack:515,reach:375},{size:"S",stack:540,reach:383},{size:"M",stack:560,reach:389},{size:"L",stack:580,reach:395},{size:"XL",stack:600,reach:402},{size:"XXL",stack:625,reach:409}]},
   {brand:"Parlee", model:"Taos", year:2024, sizes:[
@@ -922,6 +926,13 @@ function bindCockpit(){
   $("mode-cockpit").addEventListener("click",()=>{ state.mode="cockpit"; save(); applyModeUI(); renderOutputs(); });
 }
 
+/* ---------- effective top tube (ETT) ----------
+   Real manufacturer value (f.tt / size.tt) wins; otherwise it is DERIVED from stack/reach
+   via ETT = reach + stack/tan(STA) with an assumed effective seat-tube angle, flagged ≈. */
+const TT_STA=73.5;
+function ettCompute(stack,reach){ return Math.round(num(reach)+num(stack)/Math.tan(TT_STA*Math.PI/180)); }
+function frameTT(f){ return (f.tt!=null && f.tt!=="") ? {v:Math.round(num(f.tt)),approx:false} : {v:ettCompute(f.stack,f.reach),approx:true}; }
+
 function buildRows(){
   const tb=$("frame-body"); tb.innerHTML="";
   state.frames.forEach(f=>{
@@ -930,6 +941,7 @@ function buildRows(){
       <td class="name"><input class="name-in" type="text" data-k="name" value="${escapeAttr(f.name)}"></td>
       <td><input class="num" type="number" data-k="stack" step="1" inputmode="numeric" value="${f.stack}"></td>
       <td><input class="num" type="number" data-k="reach" step="1" inputmode="numeric" value="${f.reach}"></td>
+      <td class="o-tt"></td>
       <td class="o-dstack"></td>
       <td class="o-dreach"></td>
       <td class="o-str"></td>
@@ -940,6 +952,7 @@ function buildRows(){
       inp.addEventListener("input",()=>{
         const k=inp.dataset.k;
         f[k]=(k==="name")?inp.value:(inp.value===""?"":num(inp.value));
+        if(k==="stack"||k==="reach") delete f.tt;   // manual geometry edit → drop stored real TT, fall back to derived
         save(); renderOutputs();
       });
     });
@@ -964,6 +977,8 @@ function renderOutputs(){
     tr.querySelector(".o-dstack").innerHTML=deltaCell(c.dStack);
     tr.querySelector(".o-dreach").innerHTML=deltaCell(c.dReach);
     tr.querySelector(".o-str").textContent=c.str.toFixed(2);
+    const tt=frameTT(f);
+    tr.querySelector(".o-tt").innerHTML=`<span class="tt${tt.approx?" approx":""}" title="${tt.approx?t('ttApproxTitle'):t('ttRealTitle')}">${tt.approx?"≈":""}${tt.v}</span>`;
     if(c.active){
       tr.querySelector(".o-rec").innerHTML=recText(c);
       tr.querySelector(".o-status").innerHTML=statusPill(c.status);
@@ -1204,6 +1219,7 @@ $("btn-bestfit").addEventListener("click",()=>{
   const top=findBestFits(5); if(!top.length) return;
   const added=top.map(({b,s})=>{
     const nf={id:id(),seq:nextSeq(),name:`${b.brand} ${b.model} ${s.size}`,stack:s.stack,reach:s.reach};
+    if(s.tt!=null) nf.tt=s.tt;
     state.frames.push(nf); return nf;
   });
   state.example=false;
@@ -1407,6 +1423,7 @@ $("btn-db-add").addEventListener("click",()=>{
   const b=BIKE_DB[+$("db-bike").value]; if(!b) return;
   const s=b.sizes[+$("db-size").value]; if(!s) return;
   const nf={id:id(),seq:nextSeq(),name:`${b.brand} ${b.model} ${s.size}`,stack:s.stack,reach:s.reach};
+  if(s.tt!=null) nf.tt=s.tt;   // carry real manufacturer top-tube when the DB has it
   state.frames.push(nf); state.example=false;
   save(); buildRows(); renderOutputs(); updateBanner();
   const tr=$("frame-body").querySelector(`tr[data-id="${nf.id}"]`);
